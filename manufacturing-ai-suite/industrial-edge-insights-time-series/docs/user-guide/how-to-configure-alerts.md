@@ -68,6 +68,8 @@ in the [getting started guide](./get-started.md#deploy-with-docker-compose) for 
 
 To enable OPC-UA alerts in `Time Series Analytics Microservice`, use the following steps.
 
+> **Note**: OPC UA alerts are not supported for Weld Anomaly Detection sample app.
+
 #### Configuration
 
 #### 1. Configure OPC-UA Alert in TICK Script
