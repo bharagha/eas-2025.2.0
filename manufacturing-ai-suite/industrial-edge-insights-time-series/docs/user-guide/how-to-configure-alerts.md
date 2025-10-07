@@ -61,6 +61,8 @@ docker exec -ti ia-mqtt-broker mosquitto_sub -h localhost -v -t alerts/weld_defe
 
 ### Publishing OPC-UA Alerts
 
+> **Note**: This section is applicable to Wind Turbine Anomaly Dection sample app only.
+
 #### Prerequisite
 
 Ensure that `make up_opcua_ingestion` has been executed by following the steps
