@@ -199,8 +199,8 @@ jobs:
               trivy image intel/ia-mqtt-publisher:1.1.0-weekly --ignore-unfixed --format template --template "@csv.tpl" -o trivy-image-scan-mqtt-publisher-ignore-unfixed.csv
               trivy image --quiet --format spdx-json --output trivy-image-scan-mqtt-publisher.spdx.json intel/ia-mqtt-publisher:1.1.0-weekly
 
-              trivy image --list-all-pkgs --format template --template "@csv.tpl" --output trivy-image-scan-mqtt-publisher-list-all-pkgs.csv ia-mqtt-publisher:latest
-              trivy image --ignore-unfixed ia-mqtt-publisher:latest | tee trivy-image-scan-mqtt-publisher-ignore-unfixed.txt
+              trivy image --list-all-pkgs --format template --template "@csv.tpl" --output trivy-image-scan-mqtt-publisher-list-all-pkgs.csv intel/ia-mqtt-publisher:1.1.0-weekly
+              trivy image --ignore-unfixed intel/ia-mqtt-publisher:1.1.0-weekly | tee trivy-image-scan-mqtt-publisher-ignore-unfixed.txt
 
               echo "completed Wind Turbine Sample App Image scanning"
             
