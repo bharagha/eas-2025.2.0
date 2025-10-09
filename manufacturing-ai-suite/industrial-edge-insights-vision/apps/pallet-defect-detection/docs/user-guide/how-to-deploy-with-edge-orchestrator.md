@@ -22,7 +22,7 @@ To deploy the **Pallet Defect Detection** Sample Application with the Edge Orche
 
 1. Clusters with a [privilege template](<https://docs.openedgeplatform.intel.com/edge-manage-docs/dev/user_guide/advanced_functionality/set_up_a_cluster_template.html>) have been created on the needed Edge Nodes following the procedures described in [Create Cluster](<https://docs.openedgeplatform.intel.com/edge-manage-docs/dev/user_guide/set_up_edge_infra/clusters/create_clusters.html#create-cluster>).
 
-### Making the Deployment Package Available
+### Make the Deployment Package Available
 
 1. Clone the **edge-ai-suites** repository and change into Pallet Defect Detection directory:
 
@@ -33,9 +33,9 @@ To deploy the **Pallet Defect Detection** Sample Application with the Edge Orche
 
 1. From the web browser, open the URL of the Edge Orchestrator and import the Deployment Package present in the folder **deployment-package** following the steps described in [Import Deployment Package](<https://docs.openedgeplatform.intel.com/edge-manage-docs/main/user_guide/package_software/import_deployment.html#import-deployment-package>).
 
-1. Once the deployment package has been imported into the Edge Orchestrator, you can see it in the list of Web UI as shown here.
+1. After you have imported the deployment package into Edge Orchestrator, you can see it in the list of deployment packages:
 
-**![PDD Image](./images/pdd-dp.png)**
+   **![PDD Image](./images/pdd-dp.png)**
 
 See [Deployment Packages](<https://docs.openedgeplatform.intel.com/edge-manage-docs/main/user_guide/package_software/deploy_packages.html#view-deployment-packages>) for more information on deployment packages.
 
@@ -55,7 +55,7 @@ To set up a deployment:
 
 1. On the Select Deployment Type page, select the type of deployment, and click **Next**:
 
-    1. If you select **Automatic** as the deployment type, enter the deployment name and metadata in key-value format to select the target cluster.
+    1. If you select **Automatic** as the deployment type, enter the deployment name and metadata in the key-value format, to select the target cluster.
 
     1. If you select **Manual** as the deployment type, enter the deployment name and select the clusters from the list of clusters.
 
@@ -65,7 +65,7 @@ To set up a deployment:
 
 After a few minutes, the deployment will start and will take about 5 minutes to complete.
 
-In the Edge Orchestrator Web UI, you can track the application installation through the [View Deployment Details](<https://docs.openedgeplatform.intel.com/edge-manage-docs/main/user_guide/package_software/deployment_details.html#view-deployment-details>) view.
+In the Edge Orchestrator Web UI, you can track the application installation through the [View Deployment Details](<https://docs.openedgeplatform.intel.com/edge-manage-docs/main/user_guide/package_software/deployment_details.html#view-deployment-details>) page.
 
 The **Pallet Defect Detection** Sample Application is fully deployed when the applications become green and the status is shown as _Running_.
 
@@ -77,8 +77,8 @@ For more information on setting up a deployment, see [Set up a Deployment](<http
 
 ### Access the **Pallet Defect Detection** Sample Application
 
-1. Download the kubeconfig of the cluster of the Edge Node on which the Application has been deployed. Refer [Kubeconfig Download](<https://docs.openedgeplatform.intel.com/edge-manage-docs/dev/user_guide/set_up_edge_infra/clusters/accessing_clusters.html>).
+1. Download the kubeconfig file of the edge node cluster that contains the deployed application. See [Kubeconfig Download](<https://docs.openedgeplatform.intel.com/edge-manage-docs/dev/user_guide/set_up_edge_infra/clusters/accessing_clusters.html>).
 
-1. Follow the steps described in the **Pallet Defect Detection** [Documentation](<how-to-deploy-with-helm.md#run-multiple-ai-pipelines>) on usage of the application.
+1. Follow the steps in the **Pallet Defect Detection** [Documentation](<how-to-deploy-with-helm.md#run-multiple-ai-pipelines>) on the usage of the application.
 
-   > Note: Skip the Deploy helm chart step
+   > Note: Skip the Deploy Helm chart step.

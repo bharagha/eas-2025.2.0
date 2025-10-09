@@ -22,7 +22,7 @@ To deploy the **Worker Safety Gear Detection** Sample Application with the Edge 
 
 1. Clusters with a [privilege template](<https://docs.openedgeplatform.intel.com/edge-manage-docs/dev/user_guide/advanced_functionality/set_up_a_cluster_template.html>) have been created on the needed Edge Nodes following the procedures described in [Create Cluster](<https://docs.openedgeplatform.intel.com/edge-manage-docs/dev/user_guide/set_up_edge_infra/clusters/create_clusters.html#create-cluster>).
 
-### Making the Deployment Package Available
+### Make the Deployment Package Available
 
 1. Clone the **edge-ai-suites** repository and change into Worker Safety Gear Detection directory:
 
@@ -33,9 +33,9 @@ To deploy the **Worker Safety Gear Detection** Sample Application with the Edge 
 
 1. From the web browser, open the URL of the Edge Orchestrator and import the Deployment Package present in the folder **deployment-package** following the steps described in [Import Deployment Package](<https://docs.openedgeplatform.intel.com/edge-manage-docs/main/user_guide/package_software/import_deployment.html#import-deployment-package>).
 
-1. Once the deployment package has been imported into the Edge Orchestrator, you can see it in the list of Web UI as shown here.
+1. After you have imported the deployment package into Edge Orchestrator, you can see it in the list of deployment packages:
 
-**![WSGD Image](./images/wsgd-dp.png)**
+   **![WSGD Image](./images/wsgd-dp.png)**
 
 See [Deployment Packages](<https://docs.openedgeplatform.intel.com/edge-manage-docs/main/user_guide/package_software/deploy_packages.html#view-deployment-packages>) for more information on deployment packages.
 
@@ -77,8 +77,8 @@ For more information on setting up a deployment, see [Set up a Deployment](<http
 
 ### Access the **Worker Safety Gear Detection** Sample Application
 
-1. Download the kubeconfig of the cluster of the Edge Node on which the Application has been deployed. Refer [Kubeconfig Download](<https://docs.openedgeplatform.intel.com/edge-manage-docs/dev/user_guide/set_up_edge_infra/clusters/accessing_clusters.html>).
+1. Download the kubeconfig file of the edge node cluster that contains the deployed application. See [Kubeconfig Download](<https://docs.openedgeplatform.intel.com/edge-manage-docs/dev/user_guide/set_up_edge_infra/clusters/accessing_clusters.html>).
 
-1. Follow the steps described in the **Worker Safety Gear Detection** [Documentation](<how-to-deploy-with-helm.md#run-multiple-ai-pipelines>) on usage of the application.
+1. Follow the steps described in the **Worker Safety Gear Detection** [Documentation](<how-to-deploy-with-helm.md#run-multiple-ai-pipelines>) on the usage of the application.
 
-   > Note: Skip the Deploy helm chart step
+   > Note: Skip the Deploy Helm chart step.
