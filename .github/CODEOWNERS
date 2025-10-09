@@ -14,13 +14,13 @@ README.md          @xwu2intel
 /manufacturing-ai-suite/weld-porosity/                    @ajagadi1 @sugnanprabhu @rrajore @xwu2intel
 
 # metro-ai
-/metro-ai-suite/                                                 @rrajore @vagheshp @ArokiEdgard @xwu2intel
-/metro-ai-suite/image-based-video-search/                        @rrajore @vagheshp @ArokiEdgard @rohitkatakol @xwu2intel
+/metro-ai-suite/                                                 @rrajore @vagheshp @ArokiEdgard @xwu2intel @ajagadi1
+/metro-ai-suite/image-based-video-search/                        @rrajore @vagheshp @ArokiEdgard @rohitkatakol @xwu2intel @ajagadi1
 /metro-ai-suite/interactive-digital-avatar/                      @senhui2intel @Junyu-B @wzq112358 @myqi @xwu2intel
 
-/metro-ai-suite/metro-vision-ai-app-recipe/loitering-detection/  @vagheshp @tjanczak @xwu2intel
+/metro-ai-suite/metro-vision-ai-app-recipe/loitering-detection/  @vagheshp @tjanczak @xwu2intel @ajagadi1 @rrajore
 /metro-ai-suite/metro-vision-ai-app-recipe/smart-intersection/   @saratpoluri @sarthakdeva-intel @xwu2intel
-/metro-ai-suite/metro-vision-ai-app-recipe/smart-parking/        @vagheshp @tjanczak @xwu2intel
+/metro-ai-suite/metro-vision-ai-app-recipe/smart-parking/        @vagheshp @tjanczak @xwu2intel @ajagadi1 @rrajore
 
 /metro-ai-suite/sensor-fusion-for-traffic-management/            @lijiunderstand @chaofanchen-intel @thegreatchaos @xwu2intel
 /metro-ai-suite/smart-nvr/                                       @bharagha @yogeshmpandey @bhardwaj-nakul @xwu2intel
