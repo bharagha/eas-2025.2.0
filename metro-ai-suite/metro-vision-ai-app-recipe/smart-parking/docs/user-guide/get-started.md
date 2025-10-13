@@ -137,7 +137,7 @@ By following this guide, you will learn how to:
     ```bash
     curl -k https://localhost/api/pipelines
     ```
-- **WebRTC**: [https://localhost/mediamtx//object_detection_1/](https://localhost/mediamtx//object_detection_1/)
+- **WebRTC**: [https://localhost/mediamtx/object_detection_1/](https://localhost/mediamtx/object_detection_1/)
 
 
 ## **Stop the Application**:
