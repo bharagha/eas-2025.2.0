@@ -74,11 +74,11 @@ The real robot or the simulator has to be configured to accept
 connection from RVC and configure the RVC system for real time capabilities
 
 
-Set up Universal Robots UR5e Cobot
+Set up Universal Robots UR5e Robot
 --------------------------------------
  
 
-This section discusses, in brief, the steps to set up Universal Robots UR5e cobot.
+This section discusses, in brief, the steps to set up Universal Robots UR5e robot.
 
 .. note::
     For more details, refer to the 
@@ -89,7 +89,7 @@ This section discusses, in brief, the steps to set up Universal Robots UR5e cobo
 Set up Private Local Network
 -----------------------------
 
-One of the key considerations coming from Universal Robots is that the network connection from the controlling AI running RVC and the robot should be on a direct Ethernet connection. In this demonstration, a private local network with a dedicated switch was setup with no other traffic on this network, which worked well.
+One of the key considerations coming from Universal Robots robots is that the network connection from the controlling AI running RVC and the robot must be on a direct Ethernet connection. In this demonstration, a private local network with a dedicated switch was set up with no other traffic on this network, which worked well.
 
 Install external_control.urcap
 ------------------------------
@@ -175,7 +175,7 @@ Notice the different checksums.
 Create Program
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To use the new URCaps, enabling the communication with the Intel Architecture RVC controller, create a new program on the teaching pendant and insert the **External Control** program node in the program tree.
+To use the new URCaps, enabling the communication with the Intel® architecture RVC controller, create a new program on the teaching pendant and insert the **External Control** program node in the program tree.
 
 .. image:: images/html//URCreateProgram.png
     :alt: Create Program
