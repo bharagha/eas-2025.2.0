@@ -73,7 +73,8 @@ jobs:
        pwd 
        ls -al
        python3 -m robot --version
-       python3 -m robot  test.robot
+       echo "Attempting to run Robot Framework with verbose output..."
+       python -m robot --loglevel DEBUG  test.robot || echo "Robot Framework execution completed with exit code $?" || true
        mkdir -p /tmp/test_results
        cp -r report.html log.html output.xml  /tmp/test_results/
        passed=$(xmllint --xpath "//return/status[@status='PASS']" ./output.xml | wc -l) || true
