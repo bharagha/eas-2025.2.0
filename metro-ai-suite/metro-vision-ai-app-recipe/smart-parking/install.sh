@@ -17,11 +17,13 @@ echo "Configuring application to use \$HOST_IP"
 ##############################################################################
 mkdir -p src/dlstreamer-pipeline-server/models/public
 
-export MODELS_PATH=src/dlstreamer-pipeline-server/models
+export MODELS_PATH=/opt/project/src/dlstreamer-pipeline-server/models
 chmod +x /home/dlstreamer/dlstreamer/samples/download_public_models.sh
-if [ ! -e "src/dlstreamer-pipeline-server/models/public/yolov10s/FP32/yolov10s.xml" ]; then
+if [ ! -e "src/dlstreamer-pipeline-server/models/public/yolo11s/INT8/yolo11s.xml" ]; then
     for attempt in {1..3}; do
-        if /home/dlstreamer/dlstreamer/samples/download_public_models.sh yolov10s; then
+        echo "Attempt $attempt: Running model download and quantization..."
+        if /home/dlstreamer/dlstreamer/samples/download_public_models.sh yolo11s coco128; then
+            echo "Model download and quantization successful!"
             break
         else
             echo "Download attempt $attempt failed. Retrying..."
