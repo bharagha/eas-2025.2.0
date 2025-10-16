@@ -88,6 +88,7 @@ This sample application offers the following features:
    how-to-view-telemetry-data
    how-to-use-gpu-for-inference
    how-to-start-mqtt-publisher
+   how-to-benchmark
    api-reference
    environment-variables
    release_notes/Overview
