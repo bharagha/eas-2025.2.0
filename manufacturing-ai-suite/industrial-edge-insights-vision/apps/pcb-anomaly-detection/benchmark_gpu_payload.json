@@ -3,7 +3,7 @@
         "pipeline": "pcb_anomaly_detection_benchmark",
         "payload":{
             "source": {
-                "uri": "file:///home/pipeline-server/resources/videos/anomalib_pcb_test_looped.avi",
+                "uri": "file:///home/pipeline-server/resources/videos/anomalib_pcb_looped.avi",
                 "type": "uri"
             },
             "parameters": {

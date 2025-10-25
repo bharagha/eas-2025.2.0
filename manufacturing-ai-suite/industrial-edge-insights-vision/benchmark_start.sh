@@ -51,6 +51,99 @@ function get_pipeline_status() {
     curl -k -s "https://$DLSPS_NODE_IP/api/pipelines/status" "$@"
 }
 
+function check_and_loop_video() {
+  local payload=$1
+  local source_uri=$(echo "$payload" | jq -r '.source.uri // empty')
+  
+  if [ -z "$source_uri" ]; then
+    return 0
+  fi
+  
+  # Extract just the filename from the URI (handle file:// prefix and paths)
+  local filename=$(basename "$source_uri")
+  
+  # Debug: Show what file we're checking
+  echo "Checking video file: $filename" >&2
+  
+  # Check if filename ends with _looped.mp4 or _looped.avi
+  if [[ "$filename" =~ _looped\.(mp4|avi)$ ]]; then
+    echo "Found looped video request: $filename" >&2
+    # Extract base filename (remove _looped suffix but keep original extension)
+    local base_filename="${filename/_looped/}"
+    echo "Looking for base file: $base_filename" >&2
+    
+    # Search for the base file in common video locations
+    local base_file=""
+    local search_paths=(
+      "./resources/pallet-defect-detection/videos"
+      "./resources/pcb-anomaly-detection/videos"
+      "./resources/weld-porosity/videos"
+      "./resources/worker-safety-gear-detection/videos"
+    )
+    
+    # First check if the requested looped file already exists in any search path
+    for search_path in "${search_paths[@]}"; do
+      if [ -f "$search_path/$filename" ]; then
+        echo "Looped video already exists: $search_path/$filename" >&2
+        return 0
+      fi
+    done
+    
+    # If not, look for the base file to create the looped version
+    for search_path in "${search_paths[@]}"; do
+      if [ -f "$search_path/$base_filename" ]; then
+        base_file="$search_path/$base_filename"
+        echo "Found base file: $base_file" >&2
+        break
+      fi
+    done
+    
+    if [ -z "$base_file" ]; then
+      echo "Error: Base video file not found: $base_filename (searched in common locations)" >&2
+      return 1
+    fi
+    
+    # Determine output path (same directory as base file)
+    local output_file="$(dirname "$base_file")/$filename"
+    echo "Would create looped file at: $output_file" >&2
+    
+    # Skip if looped file already exists (double-check)
+    if [ -f "$output_file" ]; then
+      echo "Looped video already exists: $output_file" >&2
+      return 0
+    fi
+    
+    # Check if ffmpeg is available
+    if ! command -v ffmpeg &> /dev/null; then
+      echo "Error: ffmpeg is required to create looped video but is not installed." >&2
+      return 1
+    fi
+    
+    echo "Creating looped video: $output_file from $base_file" >&2
+    
+    # Create looped video - handle different container formats
+    # -stream_loop 10: loop the video 10 times
+    # -c copy: copy codec without re-encoding
+    local ffmpeg_opts="-stream_loop 10 -i \"$base_file\" -c copy"
+    
+    # Only add movflags for MP4 containers (not for AVI)
+    if [[ "$output_file" =~ \.mp4$ ]]; then
+      ffmpeg_opts="$ffmpeg_opts -movflags +faststart"
+    fi
+    
+    eval "ffmpeg $ffmpeg_opts \"$output_file\" -y" 2>&1 | grep -v "frame=" >&2
+    
+    if [ $? -ne 0 ]; then
+      echo "Error: Failed to create looped video." >&2
+      return 1
+    fi
+    
+    echo "Successfully created looped video: $output_file" >&2
+  fi
+  
+  return 0
+}
+
 function run_pipelines() {
   local num_pipelines=$1
   local payload_data=$2
@@ -60,49 +153,73 @@ function run_pipelines() {
   echo -n ">>>>> Initialization: Starting $num_pipelines pipeline(s) of type '$pipeline_name'..." >&2
   
   for (( x=1; x<=num_pipelines; x++ )); do
-    # Create unique payload by modifying peer-id or path for each pipeline instance
-    local unique_payload
-    local stream_index=$((x-1))
-    
-    # Generate unique payload to avoid peer-ID conflicts
-    unique_payload=$(echo "$payload_data" | jq --arg i "$stream_index" '
-      if .destination.frame.path then 
-        .destination.frame.path += $i 
-      elif .destination.frame["peer-id"] then 
-        .destination.frame["peer-id"] += $i 
-      else 
-        . 
-      end')
 
-    response=$(curl -k -s "https://$DLSPS_NODE_IP/api/pipelines/user_defined_pipelines/${pipeline_name}" \
-      -X POST -H "Content-Type: application/json" -d "$unique_payload" >/dev/null)
+    current_payload=$payload_data
+
+    if echo "$payload_data" | jq -e '.destination' > /dev/null; then
+        # Determine model type based on parameters
+        model_type="detection"
+        if echo "$payload_data" | jq -e '.parameters."classification-properties"' > /dev/null 2>&1; then
+            model_type="classification"
+        elif echo "$payload_data" | jq -e '.parameters."detection-properties"' > /dev/null 2>&1; then
+            model_type="detection"
+        fi
+        
+        current_payload=$(echo "$payload_data" | jq \
+            --arg peer_id "${model_type}_$x" \
+            '.destination.frame."peer-id" = $peer_id
+            '
+        )
+        
+        # Only add metadata.topic if the metadata field exists
+        if echo "$current_payload" | jq -e '.destination.metadata' > /dev/null 2>&1; then
+            current_payload=$(echo "$current_payload" | jq \
+                --arg topic "${model_type}_$x" \
+                '.destination.metadata.topic = $topic'
+            )
+        fi
+    fi
+
+echo -e "\n\nDEBUG - Payload for stream $x:" >&2
+    echo "$current_payload" | jq . >&2
+    echo -e "\n" >&2
+
+    response=$(curl -k -s -w "\nHTTP_CODE:%{http_code}" \
+      "https://$DLSPS_NODE_IP/api/pipelines/user_defined_pipelines/${pipeline_name}" \
+      -X POST -H "Content-Type: application/json" -d "$current_payload")
     
-    if [ $? -ne 0 ] || [[ "$response" == *"Error"* ]]; then
-      echo -e "\nError: curl command failed or pipeline returned error. Check the deployment status." >&2
-      echo "Response: $response" >&2
+    http_code=$(echo "$response" | grep "HTTP_CODE:" | cut -d: -f2)
+    response_body=$(echo "$response" | sed '/HTTP_CODE:/d')
+    
+    echo "DEBUG - HTTP Code: $http_code" >&2
+    echo "DEBUG - Response: $response_body" >&2
+    
+    if [ "$http_code" != "200" ] && [ "$http_code" != "201" ]; then
+      echo -e "\nError: Pipeline creation failed with HTTP $http_code" >&2
+      echo "Response: $response_body" >&2
       return 1
     fi
-    sleep 1 # Brief pause between requests
+    sleep 2 # Wait 2 seconds before starting next pipeline
   done
-  
-  # Wait for all pipelines to be in RUNNING state
+    
+  # Wait for all pipelines to be in RUNNING or COMPLETED state
   echo -n ">>>>> Waiting for pipelines to initialize..." >&2
-  local running_count=0
+  local active_count=0
   local attempts=0
-  while [ "$running_count" -lt "$num_pipelines" ] && [ "$attempts" -lt 60 ]; do
+  while [ "$active_count" -lt "$num_pipelines" ] && [ "$attempts" -lt 60 ]; do
     status_output=$(get_pipeline_status)
-    running_count=$(echo "$status_output" | jq '[.[] | select(.state=="RUNNING")] | length')
+    active_count=$(echo "$status_output" | jq '[.[] | select(.state=="RUNNING" or .state=="COMPLETED")] | length')
     
     echo -n "." >&2
     attempts=$((attempts + 1))
-    sleep 2
+    sleep 1
   done
   
-  if [ "$running_count" -ge "$num_pipelines" ]; then
-    echo " All pipelines are running." >&2
+  if [ "$active_count" -ge "$num_pipelines" ]; then
+    echo " All pipelines are active (running or completed)." >&2
     return 0
   else
-    echo " Error: Not all pipelines entered RUNNING state." >&2
+    echo " Error: Not all pipelines entered active state." >&2
     get_pipeline_status | jq . >&2
     return 1
   fi
@@ -165,6 +282,13 @@ function run_and_analyze_workload() {
     local payload_body
     payload_body=$(jq '.[0].payload' "$payload_file")
 
+    # Check and create looped video if needed (only once per payload)
+    check_and_loop_video "$payload_body"
+    if [ $? -ne 0 ]; then
+      echo "Error: Video preparation failed." >&2
+      return 1
+    fi
+
     run_pipelines "$num_streams" "$payload_body" "$pipeline_name"
     if [ $? -ne 0 ]; then
       echo "Failed to start pipelines. Aborting." >&2
@@ -192,18 +316,26 @@ function run_and_analyze_workload() {
     /"avg_fps":/ {
       fps=$2*1
     }
-    /"state": "RUNNING"/ {
+    /"state": "RUNNING"/ || /"state": "COMPLETED"/ {
       fps_running[++ns_running]=fps
     }
-    /^\]/ && ns_running==ns {
-      for (i=1;i<=ns;i++)
-        throughput[i][++throughput_ct[i]]=fps_running[i]
+    /^\]/ {
+      # Accept samples with target streams or fewer (for when pipelines end)
+      if (ns_running >= ns) {
+        # Take only the first ns streams if we have more than expected
+        for (i=1;i<=ns;i++)
+          throughput[i][++throughput_ct[i]]=fps_running[i]
+      } else if (ns_running > 0) {
+        # If we have fewer streams (pipelines ended), still record them
+        for (i=1;i<=ns_running;i++)
+          throughput[i][++throughput_ct[i]]=fps_running[i]
+      }
     }
     END {
-      ns=length(throughput)
-      if (ns>0) {
+      ns_actual=length(throughput)
+      if (ns_actual>0) {
         ns1=0
-        for (i=1;i<=ns;i++) {
+        for (i=1;i<=ns_actual;i++) {
           throughput_med[i]=calc_median(throughput[i])
           if (throughput_med[i]>0) {
             throughput_std[i]=calc_stdev(throughput[i])
@@ -211,12 +343,14 @@ function run_and_analyze_workload() {
             ns1++
           }
         }
-        print "throughput median: "calc_median(throughput_med)
-        print "throughput average: "calc_avg(throughput_med)
-        print "throughput stdev: "calc_max(throughput_std)
-        print "throughput cumulative: "calc_sum(throughput_med)
-        mm=(ns1<ns)?0:calc_min(throughput_med)
-        print "throughput median-min: "mm
+        if (ns1>0) {
+          print "throughput median: "calc_median(throughput_med)
+          print "throughput average: "calc_avg(throughput_med)
+          print "throughput stdev: "calc_max(throughput_std)
+          print "throughput cumulative: "calc_sum(throughput_med)
+          mm=(ns1<ns_actual)?0:calc_min(throughput_med)
+          print "throughput median-min: "mm
+        }
       }
     }
   ' "benchmark-$num_streams/sample.logs" > "benchmark-$num_streams/kpi.txt"
@@ -247,15 +381,16 @@ function usage() {
     echo
     echo "Arguments:"
     echo "  -p <payload_file>    : (Required) Path to the benchmark payload JSON file."
+    echo "                         Supports both gpu_payload.json and benchmark_gpu_payload.json files."
     echo "  -l <lower_bound>     : (Required) The starting lower bound for the number of streams."
     echo "  -u <upper_bound>     : (Required) The starting upper bound for the number of streams."
-    echo "  -t <target_fps>      : Target FPS for stream-density mode (default: 28.5)."
+    echo "  -t <target_fps>      : Target FPS for stream-density mode (default: 14.95)."
     echo "  -i <interval>        : Monitoring duration in seconds for each test run (default: 60)."
     exit 1
 }
 
 payload_file=""
-target_fps="28.5"
+target_fps="14.95"
 MAX_DURATION=60
 lower_bound=""
 upper_bound=""
@@ -281,6 +416,11 @@ if [ ! -f "$payload_file" ]; then
     exit 1
 fi
 
+# Display which payload file and pipeline will be used
+pipeline_name=$(jq -r '.[0].pipeline' "$payload_file" 2>/dev/null)
+echo "Using payload file: $payload_file" >&2
+echo "Pipeline: $pipeline_name" >&2
+
 echo ">>>>> Performing pre-flight checks..." >&2
 if ! curl -k -s --fail "https://$DLSPS_NODE_IP/api/pipelines/status" > /dev/null; then
     echo "Error: DL Streamer Pipeline Server is not running or not reachable at https://$DLSPS_NODE_IP" >&2
@@ -291,6 +431,20 @@ echo "DLSPS is reachable." >&2
 stop_all_pipelines
 if [ $? -ne 0 ]; then
    exit 1
+fi
+
+# Clean up old completed pipelines to avoid interference
+echo ">>>>> Cleaning up old completed pipelines..." >&2
+old_pipelines=$(curl -k -s "https://$DLSPS_NODE_IP/api/pipelines/status" | jq -r '[.[] | select(.state=="COMPLETED" or .state=="ABORTED") | .id] | join(",")')
+if [ -n "$old_pipelines" ]; then
+    IFS=',' read -ra old_pipeline_ids <<< "$old_pipelines"
+    for pipeline_id in "${old_pipeline_ids[@]}"; do
+        curl -k -s --location -X DELETE "https://$DLSPS_NODE_IP/api/pipelines/${pipeline_id}" >/dev/null &
+    done
+    wait
+    echo "Cleaned up ${#old_pipeline_ids[@]} old pipelines." >&2
+else
+    echo "No old pipelines to clean up." >&2
 fi
 
 records=""
