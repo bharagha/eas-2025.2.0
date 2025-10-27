@@ -57,7 +57,7 @@ You can either generate or download the Helm charts.
     HTTPS_PROXY:  # example: http_proxy: http://proxy.example.com:891
     MTX_WEBRTCICESERVERS2_0_USERNAME: 
     MTX_WEBRTCICESERVERS2_0_PASSWORD: 
-    HOST_IP: 
+    HOST_IP:  # IP address of server where DLStreamer Pipeline Server is running
     ```
 
 ## Step 3: Install Helm charts 
