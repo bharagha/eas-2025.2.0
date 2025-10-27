@@ -25,7 +25,7 @@ done for `Weld Anomaly Detection` sample app at `edge-ai-suites/manufacturing-ai
 
 The following snippet shows how to add the MQTT if not 
 already added. For `Wind Turbine Anomaly Detection` sample app, the `edge-ai-suites/manufacturing-ai-suite/industrial-edge-insights-time-series/apps/wind-turbine-anomaly-detection/time-series-analytics-config/tick_scripts/windturbine_anomaly_detector.tick` TICK Script has the following configuration done by default. The MQTT alerts configuration
-for `Weld Anomaly Detection` sample app can be found at `edge-ai-suites/manufacturing-ai-suite/industrial-edge-insights-time-series/apps/weld-anomaly-detection/time-series-analytics-config/tick_scripts/windturbine_anomaly_detector.tick`
+for `Weld Anomaly Detection` sample app can be found at `edge-ai-suites/manufacturing-ai-suite/industrial-edge-insights-time-series/apps/weld-anomaly-detection/time-series-analytics-config/tick_scripts/weld_anomaly_detector.tick`
 
 ```bash
 @windturbine_anomaly_detector()
@@ -62,7 +62,7 @@ docker exec -ti ia-mqtt-broker mosquitto_sub -h localhost -v -t alerts/weld_defe
 ### Docker - Publish OPC-UA Alerts
 
 > **Note**: 
-> This section is applicable to Wind Turbine Anomaly Dection sample app only.
+> This section is applicable to Wind Turbine Anomaly Dectection sample app only.
 > In other words, OPC UA alerts are not supported for Weld Anomaly Detection sample app.
 
 #### Prerequisite
