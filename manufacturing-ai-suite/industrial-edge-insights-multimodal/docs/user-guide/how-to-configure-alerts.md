@@ -81,7 +81,7 @@ To subscribe to MQTT topics in a Helm deployment, execute the following command:
 - Identify the MQTT broker pod name by running:
 
 ```sh
-kubectl get pods -n ts-sample-app | grep mqtt-broker
+kubectl get pods -n multimodal-sample-app | grep mqtt-broker
 ```
 
 - Use the pod name from the output of the above command to subscribe to all topics:
