@@ -81,30 +81,7 @@ To subscribe to MQTT topics in a Helm deployment, execute the following command:
 - Identify the MQTT broker pod name by running:
 
 ```sh
-kubectl get pods -n ts-sample-app | grep mqtt-broker
-```
-
-- Use the pod name from the output of the above command to subscribe to all topics:
-```sh
-kubectl exec -it -n ts-sample-app <mqtt_broker_pod_name> -- mosquitto_sub -h localhost -v -t '#' -p 1883
-```
-
-#### Helm - Subscribing to Time Series Analytics Microservice Alerts
-
-```sh
-kubectl exec -it -n ts-sample-app <mqtt_broker_pod_name> -- mosquitto_sub -h localhost -v -t alerts/weld_defect_detection -p 1883
-```
-
-#### Helm - Subscribing to DLStreamer Pipeline Server Results
-
-```sh
-kubectl exec -it -n ts-sample-app <mqtt_broker_pod_name> -- mosquitto_sub -h localhost -v -t vision_weld_defect_classification -p 1883
-```
-
-#### Helm - Subscribing to Fusion Analytics Results
-
-```sh
-kubectl exec -it -n ts-sample-app <mqtt_broker_pod_name> -- mosquitto_sub -h localhost -v -t fusion/anomaly_detection_results -p 1883
+kubectl get pods -n multimodal-sample-app | grep mqtt-broker
 ```
 
 ## Supporting Resources
