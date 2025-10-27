@@ -2,7 +2,7 @@ ros-humble-fast-mapping (2.3-1) UNRELEASED; urgency=low
 
   * Refactoring of the code and general optimizations
 
- -- ECI Maintainer <eci.maintainer@intel.com>  Fri, 25 Jul 2025 00:00:00 +0000
+ -- ECI Maintainer <eci.maintainer@intel.com>  Mon, 27 Oct 2025 00:00:00 +0000
 
 ros-humble-fast-mapping (2.2-1) UNRELEASED; urgency=low
 
