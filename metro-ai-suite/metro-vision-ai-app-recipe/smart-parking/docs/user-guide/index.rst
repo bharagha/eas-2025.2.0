@@ -23,6 +23,7 @@ Using advanced technologies and pre-trained deep learning models, the applicatio
    how-to-use-cpu-for-inference
    how-to-use-gpu-for-inference
    how-to-use-npu-for-inference
+   how-to-deploy-with-edge-orchestrator
 
 .. toctree::
    :caption: Source Code
