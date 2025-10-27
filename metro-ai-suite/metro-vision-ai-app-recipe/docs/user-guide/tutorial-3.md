@@ -17,8 +17,8 @@ By following this guide, you will learn how to:
 
 - Verify that your metro vision AI application is running: [Setup Guide](./tutorial-1.md)
 - Verify that your Node Red flow setup is completed: [Node Red Flow](./tutorial-2.md)
-- Access to Grafana dashboard (typically at `http://localhost:3000`)
-- WebRTC streaming service configured and operational
+- Access to Grafana dashboard (typically at `https://localhost/grafana`)
+- WebRTC streaming service configured and operational via nginx reverse proxy
 - MQTT broker running with object detection data feed
 
 ## Set up and First Use
@@ -26,7 +26,7 @@ By following this guide, you will learn how to:
 ### 1. **Create a New Dashboard**
 
 1. **Access Grafana Interface**:
-   - Open your web browser and navigate to `http://localhost:3000`
+   - Open your web browser and navigate to `https://localhost/grafana`
    - Log in with your Grafana credentials
       - Username: admin
       - Password: admin
@@ -47,7 +47,7 @@ By following this guide, you will learn how to:
 
    ```html
    <iframe 
-     src="http://<HOST_IP>:8889/object_detection_1" 
+     src="https://<HOST_IP>/mediamtx/object_detection_1/" 
      style="width:100%;height:500px;" 
      allow="autoplay; encrypted-media"
      frameborder="0">
@@ -102,9 +102,12 @@ After completing this tutorial, you should have:
 ## Troubleshooting
 
 1. **Video Stream Not Loading**
-   - Verify WebRTC service is running: `docker ps | grep webrtc`
-   - Check WEBRTC_URL environment variable configuration
-   - Ensure browser permissions allow autoplay and camera access
+   - Verify WebRTC service is running: `docker ps | grep mediamtx`
+   - Check that nginx reverse proxy is properly configured
+   - For localhost access, use `https://localhost/mediamtx/object_detection_1/`
+   - For remote access, ensure port 8889 is accessible or use the nginx proxy URL
+   - Ensure browser permissions allow autoplay and media access
+   - Check for HTTPS certificate warnings and accept them if using self-signed certificates
 
 2. **MQTT Data Not Appearing**
    - Confirm MQTT broker connection in Grafana data sources
