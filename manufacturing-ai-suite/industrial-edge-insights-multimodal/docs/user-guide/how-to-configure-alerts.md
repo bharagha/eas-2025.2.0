@@ -105,6 +105,7 @@ kubectl exec -it -n multimodal-sample-app <mqtt_broker_pod_name> -- mosquitto_su
 
 ```sh
 kubectl exec -it -n multimodal-sample-app <mqtt_broker_pod_name> -- mosquitto_sub -h localhost -v -t fusion/anomaly_detection_results -p 1883
+```
 
 ## Supporting Resources
 

@@ -21,7 +21,7 @@ defect classification model, publishes the frame metadata results over MQTT and 
 
 ### 2.2. **Time Series Analytics Microservice**
 
-**Time Series Analytics Microservice** uses **Kapacitor** - a real-time data processing engine that enables users to analyze time series data. It reads the weld sensor data points point by point coming from **Telegraf**, runs the ML CatBoost model to identify the anomalies, writes the results into configured measurement/table in **InfluxDB** and publishes anomolous data over MQTT.
+**Time Series Analytics Microservice** uses **Kapacitor** - a real-time data processing engine that enables users to analyze time series data. It reads the weld sensor data points point by point coming from **Telegraf**, runs the ML CatBoost model to identify the anomalies, writes the results into configured measurement/table in **InfluxDB** and publishes anomalous data over MQTT.
 Also, publishes all the processed weld sensor data points over MQTT.
 
 ---
