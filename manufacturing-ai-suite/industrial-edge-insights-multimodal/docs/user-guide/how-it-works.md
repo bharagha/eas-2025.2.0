@@ -15,7 +15,7 @@ The Weld Data Simulator simulates the ingestion of weld image and sensor data by
 ### 2.1 **DL Streamer Pipeline Server**
 
 The `DL Streamer Pipeline Server` microservice reads the frames/images from the MediaMTX server, runs the configured DL weld
-defect classification model and publishes the frame metadata results over MQTT and generates the webRTC stream with bounded boxes for visualizing in **Grafana**.
+defect classification model, publishes the frame metadata results over MQTT and generates the webRTC stream with bounded boxes for visualization in **Grafana**.
 
 ---
 
