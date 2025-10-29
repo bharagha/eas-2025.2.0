@@ -14,43 +14,43 @@ This guide demonstrates how to benchmark the PCB anomaly detection pipeline to d
 Navigate to the `[WORKDIR]/edge-ai-suites/manufacturing-ai-suite/industrial-edge-insights-vision` directory and use the benchmark script:
 
 ```bash
-./benchmark_start.sh -p <payload_file> -l <lower_bound> -u <upper_bound> [-t <target_fps>] [-i <interval>]
+./benchmark_start.sh -p <pipeline_name> -l <lower_bound> -u <upper_bound> [-t <target_fps>] [-i <interval>]
 ```
 
 **Arguments:**
-- `-p <payload_file>` : **(Required)** Path to the benchmark payload JSON file
+- `-p <pipeline_name>` : **(Required)** The name of the pipeline to benchmark (e.g., pcb_anomaly_classification)
 - `-l <lower_bound>` : **(Required)** Starting lower bound for number of streams
 - `-u <upper_bound>` : **(Required)** Starting upper bound for number of streams  
-- `-t <target_fps>` : Target FPS threshold (default: 28.5)
+- `-t <target_fps>` : Target FPS threshold (default: 14.95)
 - `-i <interval>` : Monitoring duration in seconds per test run (default: 60)
 
-### Payload Files
+### Configuration
 
-Choose the appropriate payload file based on your benchmarking objective:
+The benchmark script automatically uses the configured sample application and its payload file:
 
-1. **App's Best Performance (`gpu_payload.json`)**
-   - Uses GPU device with optimized settings and WebRTC output
-   - Tests realistic application-level performance with GPU acceleration
-   - Includes end-to-end pipeline with output destination
+1. **Application Selection**: The script reads `SAMPLE_APP` from the `.env` file to determine which application to benchmark
+2. **Payload Configuration**: Uses the standard `payload.json` file from the selected application directory (`apps/${SAMPLE_APP}/payload.json`)
+3. **Pipeline Selection**: Choose from available pipelines in the payload file (e.g., `pcb_anomaly_classification`, `pcb_anomaly_classification_gpu`)
 
-2. **GPU's Best Performance (`benchmark_gpu_payload.json`)**  
-   - Uses GPU device with optimized batch processing
-   - Tests maximum GPU throughput capabilities
-   - Hardware-accelerated preprocessing without output overhead for pure performance testing
+Available pipelines for PCB anomaly detection:
+- **`pcb_anomaly_classification`**: CPU-based anomaly classification pipeline
+- **`pcb_anomaly_classification_gpu`**: GPU-accelerated anomaly classification pipeline with optimized settings
 
 ### Steps to run benchmarks
 
-1. Test the app's best performance with GPU acceleration:
+1. **Set up the environment**: Ensure `SAMPLE_APP=pcb-anomaly-detection` is set in your `.env` file
+
+2. **Test CPU performance**:
    ```bash
-   ./benchmark_start.sh -p apps/pcb-anomaly-detection/gpu_payload.json -l 1 -u 10 -t 25.0 -i 30
+   ./benchmark_start.sh -p pcb_anomaly_classification -l 1 -u 10 -t 25.0 -i 30
    ```
 
-2. Test maximum GPU performance for pure throughput:
+3. **Test GPU performance** (if available):
    ```bash
-   ./benchmark_start.sh -p apps/pcb-anomaly-detection/benchmark_gpu_payload.json -l 1 -u 20 -t 28.5 -i 60
+   ./benchmark_start.sh -p pcb_anomaly_classification_gpu -l 1 -u 20 -t 28.5 -i 60
    ```
 
-   > NOTE: Replace the payload file path with the actual path to your benchmark payload files.
+   > NOTE: The script automatically uses the payload.json file from the configured sample application directory.
 
 ### Understanding Results
 
@@ -83,12 +83,20 @@ throughput cumulative: 173.8
    - Check network connectivity to localhost
 
 2. **Pipeline Startup Failures**
-   - Check model file paths in payload
+   - Check model file paths in payload.json
    - Verify video file accessibility  
    - Monitor system resources (CPU, memory, GPU)
+   - Ensure the correct SAMPLE_APP is set in .env file
 
-3. **Debug Mode**
+3. **Pipeline Not Found**
+   ```
+   Error: Pipeline 'pipeline_name' not found in payload.json
+   ```
+   - Verify the pipeline name exists in `apps/${SAMPLE_APP}/payload.json`
+   - Check available pipelines: `jq '.[].pipeline' apps/${SAMPLE_APP}/payload.json`
+
+4. **Debug Mode**
    Add `--trace` to see detailed execution steps:
    ```bash
-   ./benchmark_start.sh -p gpu_payload.json -l 1 -u 10 --trace
+   ./benchmark_start.sh -p pcb_anomaly_classification_gpu -l 1 -u 10 --trace
    ```
