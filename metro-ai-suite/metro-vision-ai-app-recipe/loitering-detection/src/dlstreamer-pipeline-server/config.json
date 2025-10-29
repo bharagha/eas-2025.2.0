@@ -57,25 +57,6 @@
                     }
                 },
                 "auto_start": false
-            },
-            {
-                "name": "object_tracking_benchmarking",
-                "source": "gstreamer",
-                "queue_maxsize": 50,
-                "pipeline": "{auto_source} name=source ! decodebin3 ! gvaattachroi roi=0,200,300,400 ! gvadetect name=detection ! queue ! gvafpscounter ! appsink sync=false async=false",
-                "description": "Object detection benchmarking pipeline",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "detection-properties": {
-                            "element": {
-                                "name": "detection",
-                                "format": "element-properties"
-                            }
-                        }
-                    }
-                },
-                "auto_start": false
             }
         ]
     }

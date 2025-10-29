@@ -72,30 +72,6 @@
                     }
                 },
                 "auto_start": false
-            },
-            {
-                "name": "smart_parking_benchmarking",
-                "source": "gstreamer",
-                "queue_maxsize": 50,
-                "pipeline": "{auto_source} name=source ! decodebin3 ! gvadetect name=detection ! queue ! gvaclassify name=classification ! queue ! gvapython module=/home/pipeline-server/models/colorcls2/process class=Process function=process_frame ! queue ! gvafpscounter ! appsink sync=false async=false",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "detection-properties": {
-                            "element": {
-                                "name": "detection",
-                                "format": "element-properties"
-                            }
-                        },
-                        "classification-properties": {
-                            "element": {
-                                "name": "classification",
-                                "format": "element-properties"
-                             }
-                        }
-                    }
-                },
-                "auto_start": false
             }
         ]
     }
