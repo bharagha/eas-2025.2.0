@@ -21,6 +21,7 @@ By utilizing cutting-edge technologies and pre-trained deep learning models, thi
    how-to-deploy-with-helm
    how-to-deploy-with-edge-orchestrator
    how-to-benchmark
+   how-to-view-telemetry-data
    how-to-use-gpu-for-inference
    how-to-use-cpu-for-inference
    how-to-use-npu-for-inference
