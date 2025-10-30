@@ -199,6 +199,18 @@ kubectl delete -f https://github.com/cert-manager/cert-manager/releases/download
 kubectl delete -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
 ```
 
+### Remove all PVCs and PVs (if any remain)
+```bash
+# Delete all PVCs in the smart-intersection namespace
+kubectl delete pvc --all -n smart-intersection
+
+# Delete any remaining PVs (persistent volumes)
+kubectl delete pv --all
+
+# Force cleanup of stuck PVCs if needed (patch each PVC individually)
+kubectl get pvc -n smart-intersection --no-headers | awk '{print $1}' | xargs -I {} kubectl patch pvc {} -n smart-intersection --type merge -p '{"metadata":{"finalizers":null}}'
+```
+
 ### Remove additional storage classes (if created)
 ```bash
 kubectl delete storageclass hostpath local-storage standard
