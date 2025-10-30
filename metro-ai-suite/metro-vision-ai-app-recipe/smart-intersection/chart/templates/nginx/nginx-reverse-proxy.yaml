@@ -14,23 +14,23 @@ data:
         default_type application/octet-stream;
         
         upstream smart_intersection_web {
-            server smart-intersection-web.smart-intersection.svc.cluster.local:443;
+            server smart-intersection-web:443;
         }
         
         upstream grafana {
-            server smart-intersection-grafana.smart-intersection.svc.cluster.local:3000;
+            server smart-intersection-grafana:3000;
         }
         
         upstream influxdb {
-            server influxdb2.smart-intersection.svc.cluster.local:8086;
+            server influxdb2:8086;
         }
         
         upstream nodered {
-            server smart-intersection-nodered.smart-intersection.svc.cluster.local:1880;
+            server smart-intersection-nodered:1880;
         }
         
         upstream dlstreamer {
-            server smart-intersection-dlstreamer-pipeline-server.smart-intersection.svc.cluster.local:8080;
+            server smart-intersection-dlstreamer-pipeline-server:8080;
         }
         
         # HTTP server - redirect to HTTPS
@@ -82,7 +82,7 @@ data:
             
             # Grafana dashboard
             location /grafana/ {
-                proxy_pass http://grafana/;
+                proxy_pass http://grafana;
                 proxy_set_header Host $host;
                 proxy_set_header X-Real-IP $remote_addr;
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -96,7 +96,6 @@ data:
                 # Allow iframe embedding for Grafana
                 add_header X-Frame-Options ALLOWALL always;
                 add_header Content-Security-Policy "frame-ancestors *" always;
-                proxy_redirect off;
             }
             
             # Node-RED dashboard
