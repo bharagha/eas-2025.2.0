@@ -47,7 +47,7 @@ hostname -I | awk '{print $1}'
 
 Open your web browser and navigate to the Node-RED interface:
 ```
-http://<HOST_IP>:1880
+https://<HOST_IP>/nodered/
 ```
 
 Replace `<HOST_IP>` with your actual system IP address.
@@ -64,7 +64,7 @@ If you cannot access Node-RED:
    ```
 2. Check that port 1880 is exposed and accessible
 3. Ensure no firewall is blocking the connection
-4. Try accessing via localhost if running on the same machine: `http://localhost:1880`
+4. Try accessing via localhost if running on the same machine: `https://localhost/nodered/`
 
 </details>
 
@@ -119,30 +119,30 @@ Create a debug node to monitor incoming data:
 4. **Restart the AI Pipeline** (if needed):
    If you don't see data in the debug panel, execute the AI pipeline using this curl command:
 
-   ```bash
-   curl http://localhost:8080/pipelines/user_defined_pipelines/car_plate_recognition_1 -X POST -H 'Content-Type: application/json' -d '
-   {
+      ```bash
+      # Start the AI tolling pipeline with the sample video
+      curl -k -s https://localhost/api/pipelines/user_defined_pipelines/car_plate_recognition_1 -X POST -H 'Content-Type: application/json' -d '
+      {
          "source": {
             "uri": "file:///home/pipeline-server/videos/cars_extended.mp4",
             "type": "uri"
          },
          "destination": {
             "metadata": {
-               "type": "mqtt",
-               "host": "broker:1883",
-               "topic": "object_detection_1",
-               "timeout": 1000
+                  "type": "mqtt",
+                  "topic": "object_detection_1",
+                  "timeout": 1000
             },
             "frame": {
-               "type": "webrtc",
-               "peer-id": "object_detection_1"
+                  "type": "webrtc",
+                  "peer-id": "object_detection_1"
             }
          },
          "parameters": {
             "detection-device": "CPU"
          }
-   }'
-   ```
+      }'
+      ```
 
    After running this command, you should see AI inference data appearing in the Node-RED debug panel.
 

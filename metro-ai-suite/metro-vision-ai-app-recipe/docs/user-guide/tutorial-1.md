@@ -273,10 +273,10 @@ Expected output should show containers for:
 ### 2. **Access the Application Interface**
 
 Open your web browser and navigate to:
-- **Main Dashboard**: `https://localhost/grafana` (Grafana)
+- **Main Dashboard**: `https://<HOST_IP>/grafana` (Grafana)
     - Username: admin
     - Password: admin
-- **Node-RED Flow Editor**: `https://localhost/nodered/`
+- **Node-RED Flow Editor**: `https://<HOST_IP>/nodered/`
 
 ### 3. **Test Video Processing**
 
@@ -314,7 +314,7 @@ Access the processed video stream with AI annotations through WebRTC:
 ```bash
 # Open in your web browser (replace <HOST_IP> with your actual IP address)
 # For local testing, typically use localhost or 127.0.0.1
-http://localhost/mediamtx/object_detection_1/
+http://<HOST_IP>/mediamtx/object_detection_1/
 ```
 
 For local testing, you can use: `http://localhost/mediamtx/object_detection_1/`

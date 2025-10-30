@@ -134,7 +134,7 @@ cat > ./crowd-analytics/src/dlstreamer-pipeline-server/config.json << 'EOF'
                 "name": "yolov11s_crowd_analytics",
                 "source": "gstreamer",
                 "queue_maxsize": 50,
-                "pipeline": "{auto_source} name=source ! decodebin ! gvadetect model=/home/pipeline-server/models/public/yolo11s/FP32/yolo11s.xml device=CPU pre-process-backend=opencv name=detection ! queue ! gvatrack tracking-type=short-term-imageless ! queue ! gvametaconvert add-empty-results=true name=metaconvert ! queue ! gvafpscounter ! appsink name=destination",
+                "pipeline": "{auto_source} name=source ! decodebin ! gvadetect model=/home/pipeline-server/models/public/yolo11s/FP16/yolo11s.xml device=CPU pre-process-backend=opencv name=detection ! queue ! gvatrack tracking-type=short-term-imageless ! queue ! gvametaconvert add-empty-results=true name=metaconvert ! queue ! gvafpscounter ! appsink name=destination",
                 "description": "Vehicle detection and tracking for crowd analytics",
                 "parameters": {
                     "type": "object",
@@ -189,6 +189,7 @@ if [ ! -f server.key ] || [ ! -f server.crt ]; then
     chown -R "$(id -u):$(id -g)" server.key server.crt 2>/dev/null || true
 
 fi
+cd ../../../../
 
 # Verify the configuration
 grep SAMPLE_APP= .env
@@ -235,10 +236,10 @@ Expected output should show containers for:
 ### 2. **Access the Application Interface**
 
 Open your web browser and navigate to:
-- **Main Dashboard**: `https://localhost/grafana` (Grafana)
+- **Main Dashboard**: `https://<HOST_IP>/grafana` (Grafana)
     - Username: admin
     - Password: admin
-- **Node-RED Flow Editor**: `https://localhost/nodered/`
+- **Node-RED Flow Editor**: `https://<HOST_IP>/nodered/`
 
 ### 3. **Test Video Processing**
 
@@ -1035,7 +1036,7 @@ The hotspot analytics data published to `hotspot_analytics` can be visualized in
 
 #### **Quick Setup Steps**
 
-1. **Access Grafana**: Navigate to `https://localhost/grafana` (Username: `admin`, Password: `admin`)
+1. **Access Grafana**: Navigate to `https://<HOST_IP>/grafana` (Username: `admin`, Password: `admin`)
 
 2. **Create New Dashboard**:
    - Click the "+" icon in the right sidebar
