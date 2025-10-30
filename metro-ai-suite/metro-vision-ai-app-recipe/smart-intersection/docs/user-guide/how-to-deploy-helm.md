@@ -152,7 +152,9 @@ Some services also provide direct access on dedicated ports:
 - **Username**: `admin`
 - **Password**: `admin`
 
-#### InfluxDB (Both Direct and Proxy Access)
+#### InfluxDB (Direct Access for Login)
+- **Access**: Use direct access on port 30086 for login and full functionality
+- **URL**: `http://<HOST_IP>:30086/`
 - **Username**: `admin`
 - **Password**: Get from secrets:
   ```bash
@@ -165,7 +167,7 @@ Some services also provide direct access on dedicated ports:
 #### DL Streamer Pipeline Server
 - **API Access**: No authentication required for status endpoints
 
-> **Note**: InfluxDB provides both direct access (port 30086) for full functionality and proxy access through nginx for basic functionality and API access, matching the Docker Compose setup.
+> **Note**: For InfluxDB, use the direct access on port 30086 (`http://<HOST_IP>:30086/`) for login and full functionality. The proxy access through nginx (`https://<HOST_IP>:30443/influxdb/`) provides basic functionality and API access but is not recommended for the web UI login.
 
 ## Uninstall the Application
 
