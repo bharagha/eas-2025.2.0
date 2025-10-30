@@ -96,91 +96,76 @@ kubectl get storageclass
 
 ### Step 3: Deploy the application
 
-Now you're ready to deploy the Smart Intersection application:
+Now you're ready to deploy the Smart Intersection application. To avoid cert-manager webhook issues that can cause database initialization problems, we'll temporarily disable the webhooks during deployment:
 
 ```bash
+# Temporarily remove webhook configurations to prevent deployment issues
+kubectl delete validatingwebhookconfiguration cert-manager-webhook --ignore-not-found
+kubectl delete mutatingwebhookconfiguration cert-manager-webhook --ignore-not-found
+
 # Install the chart (works on both single-node and multi-node clusters)
 helm upgrade --install smart-intersection ./smart-intersection/chart \
   --create-namespace \
   --set grafana.service.type=NodePort \
   --set global.storageClassName="" \
   -n smart-intersection
+
+# Restore webhook configurations after successful deployment
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.18.2/cert-manager.yaml
 ```
 
 > **Note**: Using `global.storageClassName=""` makes the deployment use whatever default storage class exists on your cluster. This works for both single-node and multi-node setups.
 
-> **Note**: If you encounter any issues during deployment, see the [Troubleshooting Guide](./support.md#troubleshooting-helm-deployments) for detailed solutions.
+> **Note**: The webhook bypass steps above prevent cert-manager webhook validation issues that can cause incomplete deployments and database initialization problems. The webhooks are restored after successful deployment.
 
-## Access Application Services using Node Port
+## Access Application Services
 
-### Access the Application UI using Node Port
+The Smart Intersection application provides multiple access methods, similar to the Docker Compose setup:
 
-- Get the Node Port Number using following command and use it to access the Application UI
+### Nginx Reverse Proxy Access (HTTPS - Recommended)
 
-```bash
-kubectl get service smart-intersection-web -n smart-intersection -o jsonpath='{.spec.ports[0].nodePort}'
-```
+All services are accessible through the nginx reverse proxy with TLS encryption:
 
-- Go to https://<HOST_IP>:<Node_PORT>
-- **Log in with credentials**:
-  - **Username**: `admin`
-  - **Password**: Stored in `supass` secret. To retrieve run the following command:
+- **Smart Intersection (Main UI)**: `https://<HOST_IP>:30443/` - Fully functional
+- **Grafana Dashboard**: `https://<HOST_IP>:30443/grafana/` - Fully functional  
+- **NodeRED Editor**: `https://<HOST_IP>:30443/nodered/` - Fully functional
+- **DL Streamer API**: `https://<HOST_IP>:30443/api/pipelines/` - Fully functional
+- **InfluxDB (Proxy)**: `https://<HOST_IP>:30443/influxdb/` - Basic functionality + API access
 
-    ```bash
-    kubectl get secret smart-intersection-supass-secret -n smart-intersection -o jsonpath='{.data.supass}' | base64 -d && echo
-    ```
+### Direct Service Access
 
-### Access the Grafana UI using Node Port
+Some services also provide direct access on dedicated ports:
 
-- Get the Node Port Number using following command and use it to access the Grafana UI
+- **InfluxDB (Direct)**: `http://<HOST_IP>:30086/` - Fully functional
+- **HTTP Redirect**: `http://<HOST_IP>:30080/` - Redirects to HTTPS
 
-```bash
-kubectl get service smart-intersection-grafana -n smart-intersection -o jsonpath='{.spec.ports[0].nodePort}'
-```
+### Service Credentials
 
-- Go to http://<HOST_IP>:<Node_PORT>
-- **Log in with credentials**:
-  - **Username**: `admin`
-  - **Password**: `admin`
+#### Smart Intersection Web UI
+- **Username**: `admin`
+- **Password**: Get from secrets:
+  ```bash
+  kubectl get secret smart-intersection-supass-secret -n smart-intersection -o jsonpath='{.data.supass}' | base64 -d && echo
+  ```
 
-### Access the InfluxDB UI using Node Port
+#### Grafana Dashboard  
+- **Username**: `admin`
+- **Password**: `admin`
 
-- Get the Node Port Number using following command and use it to access the InfluxDB UI
+#### InfluxDB (Both Direct and Proxy Access)
+- **Username**: `admin`
+- **Password**: Get from secrets:
+  ```bash
+  kubectl get secret smart-intersection-influxdb-secrets -n smart-intersection -o jsonpath='{.data.influxdb2-admin-password}' | base64 -d && echo
+  ```
 
-```bash
-kubectl get service influxdb2 -n smart-intersection -o jsonpath='{.spec.ports[0].nodePort}'
-```
+#### NodeRED Editor
+- **No login required** - Visual programming interface
 
-- Go to http://<HOST_IP>:<Node_PORT>
-- **Log in with credentials**:
-  - **Username**: `admin`
-  - **Password**: Stored in InfluxDB secrets. To retrieve run the following command:
+#### DL Streamer Pipeline Server
+- **API Access**: No authentication required for status endpoints
 
-    ```bash
-    kubectl get secret smart-intersection-influxdb-secrets -n smart-intersection -o jsonpath='{.data.influxdb2-admin-password}' | base64 -d && echo
-    ```
-
-### Access the NodeRED UI using Node Port
-
-- Get the Node Port Number using following command and use it to access the NodeRED UI
-
-```bash
-kubectl get service smart-intersection-nodered -n smart-intersection -o jsonpath='{.spec.ports[0].nodePort}'
-```
-
-- Go to http://<HOST_IP>:<Node_PORT>
-- **No login required** - NodeRED flows editor for visual programming
-
-### Access the DL Streamer Pipeline Server using Node Port
-
-- Get the Node Port Number using following commands:
-
-```bash
-kubectl get service smart-intersection-dlstreamer-pipeline-server -n smart-intersection -o jsonpath='{.spec.ports[0].nodePort}'
-```
-
-- **API Access**: http://<HOST_IP>:<API_PORT>/pipelines/status
-- **Purpose**: AI pipeline management and streaming interface
+> **Note**: InfluxDB provides both direct access (port 30086) for full functionality and proxy access through nginx for basic functionality and API access, matching the Docker Compose setup.
 
 ## Uninstall the Application
 
