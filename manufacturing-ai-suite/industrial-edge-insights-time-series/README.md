@@ -11,7 +11,7 @@ To see the system requirements and other installation, see the following guides:
 
 ## Architecture and Functionality Overview
 
-The Industrial Edge Insights - Time Series sample application comprises of data simulators, the generic Time Series AI stack based on **TICK Stack**, and Grafana. The Model Registry microservice helps to achieve the MLOps flow by uploading the **UDF deployment package**.
+The Industrial Edge Insights - Time Series sample applications comprises of data simulators, the generic Time Series AI stack based on **TICK Stack**, and Grafana.
 
 ![Time Series AI Stack Architecture Diagram](./docs/user-guide/_images/time-series-ai-stack-architecture.png)
 
@@ -34,4 +34,4 @@ For more details on Architecture, see [How it works](docs/user-guide/how-it-work
 - **Release Notes**
   - [Release Notes](docs/user-guide/release_notes/Overview.md): Information on the latest updates, improvements, and bug fixes.
 
-
+   
