@@ -209,7 +209,7 @@ make status
 
 By default, UDF for both the sample apps is configured to run on `CPU`.
 The `Wind Turbine Anomaly Detection` sample app ML model can run on `iGPU` while
-the `Wind Turbine Anomaly Detection` can only run on `CPU`.
+the `Weld Anomaly Detection` sample app ML model can only run on `CPU`.
 
 To trigger the UDF inference on GPU in Time Series Analytics Microservice, run the following command:
 
