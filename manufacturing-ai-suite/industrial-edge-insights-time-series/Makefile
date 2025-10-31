@@ -46,7 +46,7 @@ define multi_stream_check
 		python3 -m venv ./venv; \
 		. ./venv/bin/activate; \
 		python3 -m pip install -r requirements.txt; \
-		python generate-telegraf-config.py $(num_of_streams) $$LOG_LEVEL $$TELEGRAF_METRIC_BATCH_SIZE $(ingestion_interval) $(1) $(SAMPLE_APP); \
+		python generate-telegraf-config.py --no_of_streams $(num_of_streams) --log_level $$LOG_LEVEL --telegraf_metric_batch_size $$TELEGRAF_METRIC_BATCH_SIZE --ingestion_interval $(ingestion_interval) --ingestion_type $(1) --app_name $(SAMPLE_APP); \
 		deactivate; \
 	fi
 endef

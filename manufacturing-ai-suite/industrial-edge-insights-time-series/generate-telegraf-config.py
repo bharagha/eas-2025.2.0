@@ -41,12 +41,12 @@ def main():
     parser = argparse.ArgumentParser()
 
     # Define the arguments
-    parser.add_argument("no_of_streams", type=int, help="Number of streams to generate", default=1)
-    parser.add_argument("log_level", type=str, help="Log level", default="INFO")
-    parser.add_argument("telegraf_metric_batch_size", type=int, help="Telegraf metric batch size", default=100)
-    parser.add_argument("ingestion_interval", type=str, help="Rate of ingestions like 1s, 100ms, 10ms, etc.,", default="1s")
-    parser.add_argument("ingestion_type", type=str, help="Type of ingestion (e.g., 'opcua' or 'mqtt')", default="opcua")
-    parser.add_argument("app_name", type=str, help="Application name", default="wind-turbine-anomaly-detection")
+    parser.add_argument("--no_of_streams", type=int, help="Number of streams to generate", default=1)
+    parser.add_argument("--log_level", type=str, help="Log level", default="INFO")
+    parser.add_argument("--telegraf_metric_batch_size", type=int, help="Telegraf metric batch size", default=100)
+    parser.add_argument("--ingestion_interval", type=str, help="Rate of ingestions like 1s, 100ms, 10ms, etc.", default="1s")
+    parser.add_argument("--ingestion_type", type=str, help="Type of ingestion (e.g., 'opcua' or 'mqtt')", default="opcua")
+    parser.add_argument("--app_name", type=str, help="Application name", default="wind-turbine-anomaly-detection")
 
     # Parse the arguments
     args = parser.parse_args()
