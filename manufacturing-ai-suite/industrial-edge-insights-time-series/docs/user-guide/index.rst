@@ -35,10 +35,6 @@ unplanned downtime. Leveraging AI-driven analytics, edge devices monitor weld se
 to detect anomalous weld patterns and alert operators for timely intervention. 
 This enables proactive maintenance, improves safety, and increases operational efficiency.
 
-This sample application demonstrates a time series use case by detecting the anomalous
-power generation patterns relative to wind speed. By identifying deviations, it helps
-optimize maintenance schedules and prevent potential turbine failures, enhancing
-operational efficiency.
 
 Weld Anomaly Detection
 ----------------------
