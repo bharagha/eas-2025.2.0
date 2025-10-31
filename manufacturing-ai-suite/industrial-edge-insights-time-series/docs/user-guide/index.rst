@@ -36,19 +36,6 @@ to detect anomalous weld patterns and alert operators for timely intervention.
 This enables proactive maintenance, improves safety, and increases operational efficiency.
 
 
-Weld Anomaly Detection
-----------------------
-
-Maintaining weld quality is critical for safety and reliability in manufacturing. 
-Unexpected weld defects or process deviations can result in failures, hazards, and 
-unplanned downtime. Leveraging AI-driven analytics, edge devices monitor weld sensor data 
-to detect anomalous weld patterns and alert operators for timely intervention. 
-This enables proactive maintenance, improves safety, and increases operational efficiency.
-
-This sample application demonstrates a time series use case by detecting the anomalous
-weld patterns over time. By identifying deviations, it helps optimize welding processes
-and prevent potential defects, enhancing operational efficiency.
-
 .. toctree::
    :hidden:
 
