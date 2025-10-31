@@ -56,7 +56,10 @@ def main():
 
     telegraf_conf_path = os.path.join(dir_path, "Telegraf.conf")
     if not os.path.exists(telegraf_conf_path):
-        raise FileNotFoundError(f"Config file not found: {telegraf_conf_path}")
+        raise FileNotFoundError(
+            f"Config file not found: {telegraf_conf_path}. "
+            f"Please verify that '{args.app_name}' is a valid application name with a telegraf-config directory."
+        )
 
     with open(telegraf_conf_path, 'r') as file:
         # Read the content and replace environment variables with placeholders
