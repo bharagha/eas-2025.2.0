@@ -1036,7 +1036,7 @@ The hotspot analytics data published to `hotspot_analytics` can be visualized in
 
    ```html
    <iframe 
-     src="http://<HOST_IP>/mediamtx/object_detection_1/" 
+     src="https://<HOST_IP>/mediamtx/object_detection_1/" 
      style="width:100%;height:500px;" 
      allow="autoplay; encrypted-media"
      frameborder="0">
