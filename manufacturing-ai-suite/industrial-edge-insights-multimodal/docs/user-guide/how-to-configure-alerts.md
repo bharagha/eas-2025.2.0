@@ -4,7 +4,7 @@ This section provides instructions for setting up alerts in **Time Series Analyt
 
 ## Docker Compose Deployment
 
-### Publish MQTT Alerts
+### Docker - Publish MQTT Alerts
 
 #### Configure MQTT Alerts
 
@@ -38,7 +38,7 @@ already added. By default, the `edge-ai-suites/manufacturing-ai-suite/industrial
 
 > **Note**: Setting **QoS** to `1` ensures messages are delivered at least once. Alerts are preserved and resent if the MQTT broker reconnects after downtime.
 
-### Subscribing to MQTT Alerts
+### Docker - Subscribe to MQTT Alerts
 
 Follow the steps to subscribe to the published MQTT alerts.
 
@@ -48,17 +48,19 @@ Follow the steps to subscribe to the published MQTT alerts.
 docker exec -ti ia-mqtt-broker mosquitto_sub -h localhost -v -t '#' -p 1883
 ```
 
-#### Subscribing to Time Series Analytics Microservice Alerts
-
-- To subscribe to a specific MQTT topic, such as `alerts/weld_defect_detection`, use the following command. Note that the topic information can be found in the TICKScript:
+#### Docker - Subscribing to Time Series Analytics Microservice Alerts
 
 ```sh
 docker exec -ti ia-mqtt-broker mosquitto_sub -h localhost -v -t alerts/weld_defect_detection -p 1883
 ```
 
-#### Subscribing to Fusion Analytics Results
+#### Docker - Subscribing to DLStreamer Pipeline Server Results
 
-- To subscribe to a specific MQTT topic, such as `fusion/anomaly_detection_results`, use the following command. Note that the topic information can be found in the TICKScript:
+```sh
+docker exec -ti ia-mqtt-broker mosquitto_sub -h localhost -v -t vision_weld_defect_classification -p 1883
+```
+
+#### Docker - Subscribing to Fusion Analytics Results
 
 ```sh
 docker exec -ti ia-mqtt-broker mosquitto_sub -h localhost -v -t fusion/anomaly_detection_results -p 1883
