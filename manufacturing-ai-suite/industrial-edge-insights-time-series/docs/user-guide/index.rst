@@ -29,4 +29,5 @@ operational efficiency.
    how-to-enable-system-metrics
    how-to-update-config
    how-to-create-a-new-sample-app
+   how-to-connect-to-secure-mqtt-broker
    release_notes
