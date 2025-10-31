@@ -15,8 +15,8 @@ folder and replace the folder name with the sample app name to be created.
    Options available:
    1. Update the OPC-UA/MQTT simulator containers (`edge-ai-suites/manufacturing-ai-suite/industrial-edge-insights-time-series/simulator`) as needed
       to ingest the needed dataset to analyze via a CSV file
-   2. If you have existing `OPC-UA/MQTT` simulators, you can use that too. Just adjust the compose and helm template files like
-      the way it's done for the above existing OPC-UA/MQTT simulators
+   2. If you have existing `OPC-UA/MQTT` simulators, you can use that too. Just adjust the compose and helm template files similar to
+      the above existing OPC-UA/MQTT simulators
    3. Directly configure `Telegraf` to connect to the device acting as `OPC-UA` server OR `MQTT publisher/broker`.
       Refer to the [Telegraf plugin documentation](https://docs.influxdata.com/telegraf/v1/plugins/#input-plugins/) for more details
 
