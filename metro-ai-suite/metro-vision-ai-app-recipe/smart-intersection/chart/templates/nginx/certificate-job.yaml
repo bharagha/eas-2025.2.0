@@ -1,0 +1,211 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nginx-cert-generator
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: nginx-cert-generator
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        app: nginx-cert-generator
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: cert-generator
+        image: alpine:latest
+        env:
+        - name: http_proxy
+          value: {{ .Values.http_proxy }}
+        - name: https_proxy
+          value: {{ .Values.https_proxy }}
+        - name: no_proxy
+          value: {{ .Values.no_proxy }}
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          echo "Installing required packages..."
+          apk add --no-cache openssl curl
+          
+          echo "Generating self-signed certificate for nginx reverse proxy..."
+          
+          # Create certificate directory
+          mkdir -p /tmp/certs
+          
+          # Generate self-signed certificate
+          openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+            -keyout /tmp/certs/tls.key \
+            -out /tmp/certs/tls.crt \
+            -subj "/CN=smart-intersection-nginx/O=nginx-reverse-proxy" \
+            -addext "subjectAltName=DNS:smart-intersection-nginx,DNS:localhost,IP:{{ .Values.global.externalIP | default "127.0.0.1" }}"
+          
+          echo "Certificate generated successfully"
+          ls -la /tmp/certs/
+          
+          # Base64 encode the certificates
+          TLS_CRT=$(base64 -w 0 /tmp/certs/tls.crt)
+          TLS_KEY=$(base64 -w 0 /tmp/certs/tls.key)
+          
+          # Get the service account token
+          TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+          
+          # Create TLS secret using Kubernetes API directly
+          echo "Creating TLS secret using Kubernetes API..."
+          curl -k -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"apiVersion\": \"v1\",
+              \"kind\": \"Secret\",
+              \"metadata\": {
+                \"name\": \"nginx-reverse-proxy-tls\",
+                \"namespace\": \"{{ .Release.Namespace }}\"
+              },
+              \"type\": \"kubernetes.io/tls\",
+              \"data\": {
+                \"tls.crt\": \"$TLS_CRT\",
+                \"tls.key\": \"$TLS_KEY\"
+              }
+            }" \
+            "https://kubernetes.default.svc.cluster.local/api/v1/namespaces/{{ .Release.Namespace }}/secrets"
+          
+          echo ""
+          echo "Creating broker TLS secret..."
+          curl -k -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"apiVersion\": \"v1\",
+              \"kind\": \"Secret\",
+              \"metadata\": {
+                \"name\": \"smart-intersection-broker-tls\",
+                \"namespace\": \"{{ .Release.Namespace }}\"
+              },
+              \"type\": \"kubernetes.io/tls\",
+              \"data\": {
+                \"broker-cert\": \"$TLS_CRT\",
+                \"broker-key\": \"$TLS_KEY\",
+                \"tls.crt\": \"$TLS_CRT\",
+                \"tls.key\": \"$TLS_KEY\"
+              }
+            }" \
+            "https://kubernetes.default.svc.cluster.local/api/v1/namespaces/{{ .Release.Namespace }}/secrets"
+          
+          echo ""
+          echo "Creating CA secret..."
+          curl -k -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"apiVersion\": \"v1\",
+              \"kind\": \"Secret\",
+              \"metadata\": {
+                \"name\": \"smart-intersection-ca-secret\",
+                \"namespace\": \"{{ .Release.Namespace }}\"
+              },
+              \"type\": \"kubernetes.io/tls\",
+              \"data\": {
+                \"root-cert\": \"$TLS_CRT\",
+                \"ca.crt\": \"$TLS_CRT\",
+                \"tls.crt\": \"$TLS_CRT\",
+                \"tls.key\": \"$TLS_KEY\"
+              }
+            }" \
+            "https://kubernetes.default.svc.cluster.local/api/v1/namespaces/{{ .Release.Namespace }}/secrets"
+          
+          echo ""
+          echo "Creating web TLS secret..."
+          curl -k -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"apiVersion\": \"v1\",
+              \"kind\": \"Secret\",
+              \"metadata\": {
+                \"name\": \"smart-intersection-web-tls\",
+                \"namespace\": \"{{ .Release.Namespace }}\"
+              },
+              \"type\": \"kubernetes.io/tls\",
+              \"data\": {
+                \"tls.crt\": \"$TLS_CRT\",
+                \"tls.key\": \"$TLS_KEY\"
+              }
+            }" \
+            "https://kubernetes.default.svc.cluster.local/api/v1/namespaces/{{ .Release.Namespace }}/secrets"
+          
+          echo ""
+          echo "All TLS secrets created successfully"
+        volumeMounts:
+        - name: service-account-token
+          mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+          readOnly: true
+      volumes:
+      - name: service-account-token
+        projected:
+          sources:
+          - serviceAccountToken:
+              path: token
+          - configMap:
+              name: kube-root-ca.crt
+              items:
+              - key: ca.crt
+                path: ca.crt
+          - downwardAPI:
+              items:
+              - path: namespace
+                fieldRef:
+                  fieldPath: metadata.namespace
+      serviceAccountName: nginx-cert-generator
+  backoffLimit: 3
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nginx-cert-generator
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: nginx-cert-generator
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["create", "get", "update", "patch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: nginx-cert-generator
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+subjects:
+- kind: ServiceAccount
+  name: nginx-cert-generator
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: nginx-cert-generator
+  apiGroup: rbac.authorization.k8s.io
