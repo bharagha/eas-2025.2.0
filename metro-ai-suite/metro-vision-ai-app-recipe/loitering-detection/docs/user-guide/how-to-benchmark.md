@@ -54,6 +54,8 @@ During each test run, the script logs the `avg_fps` for every active pipeline in
 
 ## Step 3: Run the Benchmark
 
+> **Note:** The default parameters are set based on best know methods recommended by Edge Workloads and Benchamarks group for workload with similar characteristics. These parameters can be modified when starting the pipelines.
+
 The `benchmark_start.sh` script requires a pipeline name and stream count boundaries to run. The available pipelines are defined in the `benchmark_app_payload.json` file located within each application's directory (e.g., `loitering-detection/`).
 
 <details>
