@@ -39,25 +39,40 @@ spec:
           # Create certificate directory
           mkdir -p /tmp/certs
           
-          # Generate self-signed certificate
+          # Generate self-signed certificate for nginx
           openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-            -keyout /tmp/certs/tls.key \
-            -out /tmp/certs/tls.crt \
+            -keyout /tmp/certs/nginx-tls.key \
+            -out /tmp/certs/nginx-tls.crt \
             -subj "/CN=smart-intersection-nginx/O=nginx-reverse-proxy" \
-            -addext "subjectAltName=DNS:smart-intersection-nginx,DNS:localhost,IP:{{ .Values.global.externalIP | default "127.0.0.1" }}"
+            -addext "subjectAltName=DNS:smart-intersection-nginx,DNS:web.scenescape.intel.com,DNS:localhost,IP:{{ .Values.global.externalIP | default "127.0.0.1" }}"
           
-          echo "Certificate generated successfully"
+          echo "Generating self-signed certificate for broker..."
+          
+          # Generate self-signed certificate for broker
+          openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+            -keyout /tmp/certs/broker-tls.key \
+            -out /tmp/certs/broker-tls.crt \
+            -subj "/CN=smart-intersection-broker/O=mqtt-broker" \
+            -addext "subjectAltName=DNS:smart-intersection-broker,DNS:broker.scenescape.intel.com,DNS:localhost,IP:{{ .Values.global.externalIP | default "127.0.0.1" }}"
+          
+          echo "Certificates generated successfully"
           ls -la /tmp/certs/
           
           # Base64 encode the certificates
-          TLS_CRT=$(base64 -w 0 /tmp/certs/tls.crt)
-          TLS_KEY=$(base64 -w 0 /tmp/certs/tls.key)
+          NGINX_TLS_CRT=$(base64 -w 0 /tmp/certs/nginx-tls.crt)
+          NGINX_TLS_KEY=$(base64 -w 0 /tmp/certs/nginx-tls.key)
+          BROKER_TLS_CRT=$(base64 -w 0 /tmp/certs/broker-tls.crt)
+          # Base64 encode the certificates
+          NGINX_TLS_CRT=$(base64 -w 0 /tmp/certs/nginx-tls.crt)
+          NGINX_TLS_KEY=$(base64 -w 0 /tmp/certs/nginx-tls.key)
+          BROKER_TLS_CRT=$(base64 -w 0 /tmp/certs/broker-tls.crt)
+          BROKER_TLS_KEY=$(base64 -w 0 /tmp/certs/broker-tls.key)
           
           # Get the service account token
           TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
           
-          # Create TLS secret using Kubernetes API directly
-          echo "Creating TLS secret using Kubernetes API..."
+          # Create TLS secret for nginx using Kubernetes API
+          echo "Creating nginx TLS secret using Kubernetes API..."
           curl -k -X POST \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
@@ -70,8 +85,8 @@ spec:
               },
               \"type\": \"kubernetes.io/tls\",
               \"data\": {
-                \"tls.crt\": \"$TLS_CRT\",
-                \"tls.key\": \"$TLS_KEY\"
+                \"tls.crt\": \"$NGINX_TLS_CRT\",
+                \"tls.key\": \"$NGINX_TLS_KEY\"
               }
             }" \
             "https://kubernetes.default.svc.cluster.local/api/v1/namespaces/{{ .Release.Namespace }}/secrets"
@@ -90,10 +105,10 @@ spec:
               },
               \"type\": \"kubernetes.io/tls\",
               \"data\": {
-                \"broker-cert\": \"$TLS_CRT\",
-                \"broker-key\": \"$TLS_KEY\",
-                \"tls.crt\": \"$TLS_CRT\",
-                \"tls.key\": \"$TLS_KEY\"
+                \"broker-cert\": \"$BROKER_TLS_CRT\",
+                \"broker-key\": \"$BROKER_TLS_KEY\",
+                \"tls.crt\": \"$BROKER_TLS_CRT\",
+                \"tls.key\": \"$BROKER_TLS_KEY\"
               }
             }" \
             "https://kubernetes.default.svc.cluster.local/api/v1/namespaces/{{ .Release.Namespace }}/secrets"
@@ -112,10 +127,10 @@ spec:
               },
               \"type\": \"kubernetes.io/tls\",
               \"data\": {
-                \"root-cert\": \"$TLS_CRT\",
-                \"ca.crt\": \"$TLS_CRT\",
-                \"tls.crt\": \"$TLS_CRT\",
-                \"tls.key\": \"$TLS_KEY\"
+                \"root-cert\": \"$NGINX_TLS_CRT\",
+                \"ca.crt\": \"$NGINX_TLS_CRT\",
+                \"tls.crt\": \"$NGINX_TLS_CRT\",
+                \"tls.key\": \"$NGINX_TLS_KEY\"
               }
             }" \
             "https://kubernetes.default.svc.cluster.local/api/v1/namespaces/{{ .Release.Namespace }}/secrets"
@@ -134,13 +149,12 @@ spec:
               },
               \"type\": \"kubernetes.io/tls\",
               \"data\": {
-                \"tls.crt\": \"$TLS_CRT\",
-                \"tls.key\": \"$TLS_KEY\"
+                \"tls.crt\": \"$NGINX_TLS_CRT\",
+                \"tls.key\": \"$NGINX_TLS_KEY\"
               }
             }" \
             "https://kubernetes.default.svc.cluster.local/api/v1/namespaces/{{ .Release.Namespace }}/secrets"
           
-          echo ""
           echo "All TLS secrets created successfully"
         volumeMounts:
         - name: service-account-token
