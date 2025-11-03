@@ -1,0 +1,129 @@
+# Copyright (C) 2025 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+        with:
+          sparse-checkout: robotics-ai-suite/components/fast-mapping
+          persist-credentials: false
+
+      - name: Lint
+        env:
+          GITHUB_TOKEN: '${{ secrets.GH_TOKEN }}'
+        run: |
+          make lint
+
+  license-check:
+    name: License Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+        with:
+          sparse-checkout: robotics-ai-suite/components/fast-mapping
+          persist-credentials: false
+      - name: REUSE Compliance Check
+        uses: fsfe/reuse-action@676e2d560c9a403aa252096d99fcab3e1132b0f5  # v6.0.0
+
+  build-test:
+    needs: [lint, license-check]
+    name: 'Build & Test (${{ matrix.ros_distro }})'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ros_distro: [humble, jazzy]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+        with:
+          sparse-checkout: robotics-ai-suite/components/fast-mapping
+          persist-credentials: false
+
+      - name: Build [colcon]
+        shell: bash
+        run: |
+          ROS_DISTRO=${{ matrix.ros_distro }} make build
+
+      - name: Run Tests
+        shell: bash
+        run: |
+          ROS_DISTRO=${{ matrix.ros_distro }} make test
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: 'test-results-${{ matrix.ros_distro }}'
+          path: |
+            build/*/Testing
+            build/*/test_results
+
+  build-package:
+    needs: [build-test]
+    name: 'Build Package (${{ matrix.ros_distro }})'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ros_distro: [humble, jazzy]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+        with:
+          sparse-checkout: robotics-ai-suite/components/fast-mapping
+          persist-credentials: false
+
+      - name: Build package
+        shell: bash
+        run: |
+          ROS_DISTRO=${{ matrix.ros_distro }} make package
+
+      - name: Collect build artifacts
+        shell: bash
+        run: |
+          mkdir -p output
+          find ./ -name "*.deb" -not -name "*-build-deps_*" -not -name "*-dbgsym_*" -exec mv {} output/ \; 2>/dev/null || true
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4  # v5.0.0
+        with:
+          name: ros-${{ matrix.ros_distro }}-packages
+          path: output/*.deb
+
+  test-e2e:
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ matrix.ros_distro }}
+      cancel-in-progress: true
+    name: E2E tests (${{ matrix.ros_distro }})
+    runs-on: ubuntu-latest
+    needs: build-package
+    strategy:
+      matrix:
+        ros_distro: [humble, jazzy]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+        with:
+          sparse-checkout: robotics-ai-suite/components/fast-mapping
+          persist-credentials: false
+
+      - name: Download debian packages
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53  # v6.0.0
+        with:
+          name: ros-${{ matrix.ros_distro }}-packages
+          path: ./
+
+      - name: Run E2E tests
+        run: ROS_DISTRO=${{ matrix.ros_distro }} make test-e2e
