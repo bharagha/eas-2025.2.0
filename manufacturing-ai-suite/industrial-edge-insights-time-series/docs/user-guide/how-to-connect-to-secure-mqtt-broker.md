@@ -202,7 +202,7 @@ Edit your sample app config file:
   "alerts": {
     "mqtt": {
       "mqtt_broker_host": "YOUR_MQTT_BROKER_IP",
-      "mqtt_broker_port": MQTT_PORT,
+      "mqtt_broker_port": "MQTT_PORT",
       "name": "my_mqtt_broker"
     }
   }
