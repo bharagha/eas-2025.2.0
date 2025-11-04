@@ -71,7 +71,7 @@ sha256sum smart-parking-offline-*.tar.gz > package-checksum.txt
 # - package-checksum.txt (integrity verification file)
 ```
 
-**Transfer options for offline environments:**s
+**Transfer options for offline environments:**
 - **USB/External drive**: Copy files to removable media
 - **Secure network**: Use SCP, SFTP, or approved file transfer protocols
 - **Physical media**: Burn to DVD/Blu-ray for highly secure environments
