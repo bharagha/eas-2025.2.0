@@ -10,7 +10,6 @@ import os
 import logging
 import time
 import warnings
-from xml.parsers.expat import model
 from kapacitor.udf.agent import Agent, Handler
 from kapacitor.udf import udf_pb2
 import catboost as cb
