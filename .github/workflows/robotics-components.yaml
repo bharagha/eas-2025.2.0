@@ -32,14 +32,14 @@ jobs:
             its-planner-location:
               - 'robotics-ai-suite/components/its-planner/**'
 
-  build-fast-mapping:
-    name: "Build (Fast Mapping)"
+  fast-mapping:
+    name: "Fast Mapping"
     needs: check-changes
     if: ${{ needs.check-changes.outputs.fast-mapping-changed == 'true' }}
     uses: "./.github/workflows/robotics-components-fast-mapping.yaml"
 
-  build-its-planner:
-    name: "Build (ITS Planner)"
+  its-planner:
+    name: "ITS Planner"
     needs: check-changes
     if: ${{ needs.check-changes.outputs.its-planner-changed == 'true' }}
     uses: "./.github/workflows/robotics-components-its-planner.yaml"
