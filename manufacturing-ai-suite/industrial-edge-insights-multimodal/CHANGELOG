@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## [2026.2] - November 2025
+## [2025.2] - December 2025
 
 ### Added
 - Introduced a new sample application for Multimodal (Vision + Timeseries) Weld Defect Detection, combining camera-based visual inspection and sensor data analysis for industrial edge insights. ([#669])
