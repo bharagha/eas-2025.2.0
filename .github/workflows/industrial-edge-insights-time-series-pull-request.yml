@@ -59,9 +59,9 @@ jobs:
         make down 
         # Generate random values for sensitive environment variables
         INFLUXDB_USERNAME=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 8)
-        INFLUXDB_PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 10)
+        INFLUXDB_PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 10)
         VISUALIZER_GRAFANA_USER=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 8)
-        VISUALIZER_GRAFANA_PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 10)
+        VISUALIZER_GRAFANA_PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 10)
 
         sed -i "s/INFLUXDB_USERNAME=.*/INFLUXDB_USERNAME=${INFLUXDB_USERNAME}/g" .env
         sed -i "s/INFLUXDB_PASSWORD=.*/INFLUXDB_PASSWORD=${INFLUXDB_PASSWORD}/g" .env
@@ -100,9 +100,9 @@ jobs:
         make down 
         # Generate random values for sensitive environment variables
         INFLUXDB_USERNAME=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 8)
-        INFLUXDB_PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 10)
+        INFLUXDB_PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 10)
         VISUALIZER_GRAFANA_USER=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 8)
-        VISUALIZER_GRAFANA_PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 10)
+        VISUALIZER_GRAFANA_PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 10)
         MTX_WEBRTCICESERVERS2_0_USERNAME=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 8)
         MTX_WEBRTCICESERVERS2_0_PASSWORD=$(openssl rand -hex 10)
         HOST_IP=$(hostname -I | awk '{print $1}')
