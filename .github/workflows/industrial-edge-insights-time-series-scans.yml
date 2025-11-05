@@ -206,6 +206,31 @@ jobs:
         run: |
               pwd
               CWD=$(pwd)
+              # Define the extract_static_images function
+              extract_static_images() {
+                local map_name="$1"
+                local compose_file="${2:-docker-compose.yml}"
+
+                # Use nameref for associative array
+                declare -n IMAGE_MAP_REF="$map_name"
+
+                if [[ ! -f "$compose_file" ]]; then
+                    echo "Error: docker-compose.yml file not found at $compose_file"
+                    exit 1
+                fi
+
+                echo "Extracting static images from $compose_file..."
+
+                while IFS= read -r line; do
+                    image=$(echo "$line" | sed -n 's/.*image:[[:space:]]*\([^[:space:]]*\).*/\1/p')
+                    if [[ -n "$image" && ! "$image" =~ \$\{ ]]; then
+                        base_name="${image%%[/:]*}"
+                        IMAGE_MAP_REF["$image"]="$base_name"
+                        echo "Added to $map_name: \"$image\" -> \"$base_name\""
+                    fi
+                done < <(grep -E "^[[:space:]]*image:" "$compose_file")
+              }
+
               if [[ "${{ inputs.application }}" == "time-series" || "${{ inputs.application }}" == "both" ]]; then
                 echo "Building Time Series Sample app and scanning docker images"
                 cd $CWD/manufacturing-ai-suite/industrial-edge-insights-time-series/
@@ -215,19 +240,21 @@ jobs:
                 MQTT_PUBLISHER_IMAGE=$(grep '^MQTT_PUBLISHER_IMAGE=' .env | cut -d'=' -f2)
                 IMAGE_SUFFIX=$(grep '^IMAGE_SUFFIX=' .env | cut -d'=' -f2 | tr -d '"')
                 if [ -n "$IMAGE_SUFFIX" ]; then
-                  OPC_UA_SERVER_IMAGE="${OPC_UA_SERVER_IMAGE}-${IMAGE_SUFFIX}"
-                  MQTT_PUBLISHER_IMAGE="${MQTT_PUBLISHER_IMAGE}-${IMAGE_SUFFIX}"
+                    OPC_UA_SERVER_IMAGE="${OPC_UA_SERVER_IMAGE}-${IMAGE_SUFFIX}"
+                    MQTT_PUBLISHER_IMAGE="${MQTT_PUBLISHER_IMAGE}-${IMAGE_SUFFIX}"
                 fi
+
                 make build
 
-                declare -A IMAGE_MAP
-                IMAGE_MAP[$OPC_UA_SERVER_IMAGE]="opcua-server"
-                IMAGE_MAP[$MQTT_PUBLISHER_IMAGE]="mqtt-publisher"
-
+                declare -A IMAGE_MAP_TS
+                IMAGE_MAP_TS[$OPC_UA_SERVER_IMAGE]="opcua-server"
+                IMAGE_MAP_TS[$MQTT_PUBLISHER_IMAGE]="mqtt-publisher"
+                extract_static_images IMAGE_MAP_TS
+                
                 # Loop through images and perform Trivy scans
-                for IMAGE in "${!IMAGE_MAP[@]}"; do
-                    PREFIX="${IMAGE_MAP[$IMAGE]}"
-                    
+                for IMAGE in "${!IMAGE_MAP_TS[@]}"; do
+                    PREFIX="${IMAGE_MAP_TS[$IMAGE]}"
+
                     echo "Scanning image: $IMAGE"
                     
                     # All scan types
@@ -250,21 +277,26 @@ jobs:
 
                 WELD_SIMULATOR_IMAGE=$(grep '^WELD_SIMULATOR_IMAGE=' .env | cut -d'=' -f2)
                 FUSION_MODULE_IMAGE=$(grep '^FUSION_MODULE_IMAGE=' .env | cut -d'=' -f2)
+                DLSTREAMER_PIPELINE_SERVER_IMAGE=$(grep '^DLSTREAMER_PIPELINE_SERVER_IMAGE=' .env | cut -d'=' -f2)
                 IMAGE_SUFFIX=$(grep '^IMAGE_SUFFIX=' .env | cut -d'=' -f2 | tr -d '"')
                 if [ -n "$IMAGE_SUFFIX" ]; then
-                  WELD_SIMULATOR_IMAGE="${WELD_SIMULATOR_IMAGE}-${IMAGE_SUFFIX}"
-                  FUSION_MODULE_IMAGE="${FUSION_MODULE_IMAGE}-${IMAGE_SUFFIX}"
+                    WELD_SIMULATOR_IMAGE="${WELD_SIMULATOR_IMAGE}-${IMAGE_SUFFIX}"
+                    FUSION_MODULE_IMAGE="${FUSION_MODULE_IMAGE}-${IMAGE_SUFFIX}"
+                    DLSTREAMER_PIPELINE_SERVER_IMAGE="${DLSTREAMER_PIPELINE_SERVER_IMAGE}-${IMAGE_SUFFIX}"
                 fi
+
                 make build
 
-                declare -A IMAGE_MAP
-                IMAGE_MAP[$WELD_SIMULATOR_IMAGE]="weld-simulator"
-                IMAGE_MAP[$FUSION_MODULE_IMAGE]="fusion-analytics"
+                declare -A IMAGE_MAP_MM
+                IMAGE_MAP_MM[$WELD_SIMULATOR_IMAGE]="weld-simulator"
+                IMAGE_MAP_MM[$FUSION_MODULE_IMAGE]="fusion-analytics"
+                IMAGE_MAP_MM[$DLSTREAMER_PIPELINE_SERVER_IMAGE]="dlstreamer"
+                extract_static_images IMAGE_MAP_MM
 
                 # Loop through images and perform Trivy scans
-                for IMAGE in "${!IMAGE_MAP[@]}"; do
-                    PREFIX="${IMAGE_MAP[$IMAGE]}"
-                    
+                for IMAGE in "${!IMAGE_MAP_MM[@]}"; do
+                    PREFIX="${IMAGE_MAP_MM[$IMAGE]}"
+
                     echo "Scanning image: $IMAGE"
                     
                     # All scan types
