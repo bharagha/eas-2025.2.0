@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## [2025.2] - October 2025
+## [2025.2] - December 2025
 
 ### Added
 - Integrated new "Weld Anomaly Detection" sample application with CatBoost ML model and dashboards. ([#742])
