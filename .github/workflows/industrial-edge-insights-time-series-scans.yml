@@ -202,7 +202,6 @@ jobs:
       
       - name: Trivy Image Scan
         continue-on-error: true
-        shell: bash
         run: |
               pwd
               CWD=$(pwd)
@@ -211,18 +210,16 @@ jobs:
                 echo "Building Time Series Sample app and scanning docker images"
                 cd $CWD/manufacturing-ai-suite/industrial-edge-insights-time-series/
                 make down
-                INFLUXDB_USERNAME=$(openssl rand -base64 12 2>/dev/null | tr -dc 'a-zA-Z' | head -c 8 2>/dev/null || echo "users$(date +%s)")
-                base=$(tr -dc 'a-zA-Z' </dev/urandom | head -c9)
-                digit=$(tr -dc '0-9' </dev/urandom | head -c1)
-                pos=$((RANDOM % 10))
-                INFLUXDB_PASSWORD=${base:0:$pos}${digit}${base:$pos}
-                VISUALIZER_GRAFANA_USER=$(openssl rand -base64 12 2>/dev/null | tr -dc 'a-zA-Z' | head -c 8 2>/dev/null || echo "users$(date +%s)")
-                VISUALIZER_GRAFANA_PASSWORD=${base:0:$pos}${digit}${base:$pos}
+                
+                INFLUXDB_USERNAME=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 8)
+                INFLUXDB_PASSWORD=$(openssl rand -hex 10)
+                VISUALIZER_GRAFANA_USER=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 8)
+                VISUALIZER_GRAFANA_PASSWORD=$(openssl rand -hex 10)
 
-                sed -i "s/INFLUXDB_USERNAME=.*/INFLUXDB_USERNAME=${INFLUXDB_USERNAME}/g" .env
-                sed -i "s/INFLUXDB_PASSWORD=.*/INFLUXDB_PASSWORD=${INFLUXDB_PASSWORD}/g" .env
-                sed -i "s/VISUALIZER_GRAFANA_USER=.*/VISUALIZER_GRAFANA_USER=${VISUALIZER_GRAFANA_USER}/g" .env
-                sed -i "s/VISUALIZER_GRAFANA_PASSWORD=.*/VISUALIZER_GRAFANA_PASSWORD=${VISUALIZER_GRAFANA_PASSWORD}/g" .env
+                sed -i "s/INFLUXDB_USERNAME:.*/INFLUXDB_USERNAME: ${INFLUXDB_USERNAME}/g" values.yaml
+                sed -i "s/INFLUXDB_PASSWORD:.*/INFLUXDB_PASSWORD: ${INFLUXDB_PASSWORD}/g" values.yaml
+                sed -i "s/VISUALIZER_GRAFANA_USER:.*/VISUALIZER_GRAFANA_USER: ${VISUALIZER_GRAFANA_USER}/g" values.yaml
+                sed -i "s/VISUALIZER_GRAFANA_PASSWORD:.*/VISUALIZER_GRAFANA_PASSWORD: ${VISUALIZER_GRAFANA_PASSWORD}/g" values.yaml
 
                 make build
                 make up_mqtt_ingestion
@@ -259,15 +256,13 @@ jobs:
                 echo "Building Multimodal Weld Defect Detection Sample app and scanning docker images"
                 cd $CWD/manufacturing-ai-suite/industrial-edge-insights-multimodal/
                 make down
+                # Generate random values for sensitive environment variables
                 INFLUXDB_USERNAME=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 8)
-                base=$(tr -dc 'a-zA-Z' </dev/urandom | head -c9)
-                digit=$(tr -dc '0-9' </dev/urandom | head -c1)
-                pos=$((RANDOM % 10))
-                INFLUXDB_PASSWORD=${base:0:$pos}${digit}${base:$pos}
+                INFLUXDB_PASSWORD=$(openssl rand -hex 10)
                 VISUALIZER_GRAFANA_USER=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 8)
-                VISUALIZER_GRAFANA_PASSWORD=${base:0:$pos}${digit}${base:$pos}
+                VISUALIZER_GRAFANA_PASSWORD=$(openssl rand -hex 10)
                 MTX_WEBRTCICESERVERS2_0_USERNAME=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 8)
-                MTX_WEBRTCICESERVERS2_0_PASSWORD=${base:0:$pos}${digit}${base:$pos}
+                MTX_WEBRTCICESERVERS2_0_PASSWORD=$(openssl rand -hex 10)
                 HOST_IP=$(hostname -I | awk '{print $1}')
 
                 sed -i "s/INFLUXDB_USERNAME=.*/INFLUXDB_USERNAME=${INFLUXDB_USERNAME}/g" .env
