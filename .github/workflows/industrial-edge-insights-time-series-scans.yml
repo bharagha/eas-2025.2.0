@@ -211,12 +211,12 @@ jobs:
                 echo "Building Time Series Sample app and scanning docker images"
                 cd $CWD/manufacturing-ai-suite/industrial-edge-insights-time-series/
                 make down
-                INFLUXDB_USERNAME=$(cat /dev/urandom 2>/dev/null | tr -dc 'a-zA-Z' 2>/dev/null | head -c 8 2>/dev/null || echo "users$(date +%s)")
+                INFLUXDB_USERNAME=$(openssl rand -base64 12 2>/dev/null | tr -dc 'a-zA-Z' | head -c 8 2>/dev/null || echo "users$(date +%s)")
                 base=$(tr -dc 'a-zA-Z' </dev/urandom | head -c9)
                 digit=$(tr -dc '0-9' </dev/urandom | head -c1)
                 pos=$((RANDOM % 10))
                 INFLUXDB_PASSWORD=${base:0:$pos}${digit}${base:$pos}
-                VISUALIZER_GRAFANA_USER=$(cat /dev/urandom 2>/dev/null | tr -dc 'a-zA-Z' 2>/dev/null | head -c 8 2>/dev/null || echo "admin$(date +%s)")
+                VISUALIZER_GRAFANA_USER=$(openssl rand -base64 12 2>/dev/null | tr -dc 'a-zA-Z' | head -c 8 2>/dev/null || echo "users$(date +%s)")
                 VISUALIZER_GRAFANA_PASSWORD=${base:0:$pos}${digit}${base:$pos}
 
                 sed -i "s/INFLUXDB_USERNAME=.*/INFLUXDB_USERNAME=${INFLUXDB_USERNAME}/g" .env
