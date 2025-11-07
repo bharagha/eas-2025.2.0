@@ -203,108 +203,105 @@ jobs:
       - name: Trivy Image Scan
         continue-on-error: true
         run: |
-              pwd
-              CWD=$(pwd)
+            pwd
+            CWD=$(pwd)
+            INFLUXDB_USERNAME=$(tr -dc 'a-zA-Z' < /dev/urandom | head -c 8)
+            INFLUXDB_PASSWORD=$(openssl rand -hex 10)
+            VISUALIZER_GRAFANA_USER=$(tr -dc 'a-zA-Z' < /dev/urandom | head -c 8)
+            VISUALIZER_GRAFANA_PASSWORD=$(openssl rand -hex 10)
+            MTX_WEBRTCICESERVERS2_0_USERNAME=$(tr -dc 'a-zA-Z' < /dev/urandom | head -c 8)
+            MTX_WEBRTCICESERVERS2_0_PASSWORD=$(openssl rand -hex 10)
+            HOST_IP=$(hostname -I | awk '{print $1}')
 
-              if [[ "${{ inputs.application }}" == "time-series" || "${{ inputs.application }}" == "both" ]]; then
-                echo "Building Time Series Sample app and scanning docker images"
-                cd $CWD/manufacturing-ai-suite/industrial-edge-insights-time-series/
-                make down
-                
-                INFLUXDB_USERNAME=$(tr -dc 'a-zA-Z' < /dev/urandom | head -c 8)
-                INFLUXDB_PASSWORD=$(openssl rand -hex 10)
-                VISUALIZER_GRAFANA_USER=$(tr -dc 'a-zA-Z' < /dev/urandom | head -c 8)
-                VISUALIZER_GRAFANA_PASSWORD=$(openssl rand -hex 10)
+            echo "INFLUXDB_USERNAME: $INFLUXDB_USERNAME"
+            echo "VISUALIZER_GRAFANA_USER: $VISUALIZER_GRAFANA_USER"
+            echo "MTX_WEBRTCICESERVERS2_0_USERNAME: $MTX_WEBRTCICESERVERS2_0_USERNAME"
+            
+            if [[ "${{ inputs.application }}" == "time-series" || "${{ inputs.application }}" == "both" ]]; then
+              echo "Building Time Series Sample app and scanning docker images"
+              cd $CWD/manufacturing-ai-suite/industrial-edge-insights-time-series/
+              make down
 
-                sed -i "s/INFLUXDB_USERNAME:.*/INFLUXDB_USERNAME: ${INFLUXDB_USERNAME}/g" .env
-                sed -i "s/INFLUXDB_PASSWORD:.*/INFLUXDB_PASSWORD: ${INFLUXDB_PASSWORD}/g" .env
-                sed -i "s/VISUALIZER_GRAFANA_USER:.*/VISUALIZER_GRAFANA_USER: ${VISUALIZER_GRAFANA_USER}/g" .env
-                sed -i "s/VISUALIZER_GRAFANA_PASSWORD:.*/VISUALIZER_GRAFANA_PASSWORD: ${VISUALIZER_GRAFANA_PASSWORD}/g" .env
+              sed -i "s/INFLUXDB_USERNAME:.*/INFLUXDB_USERNAME: ${INFLUXDB_USERNAME}/g" .env
+              sed -i "s/INFLUXDB_PASSWORD:.*/INFLUXDB_PASSWORD: ${INFLUXDB_PASSWORD}/g" .env
+              sed -i "s/VISUALIZER_GRAFANA_USER:.*/VISUALIZER_GRAFANA_USER: ${VISUALIZER_GRAFANA_USER}/g" .env
+              sed -i "s/VISUALIZER_GRAFANA_PASSWORD:.*/VISUALIZER_GRAFANA_PASSWORD: ${VISUALIZER_GRAFANA_PASSWORD}/g" .env
 
-                make build
-                make up_mqtt_ingestion
-                make down
+              make build
+              make up_mqtt_ingestion
+              make down
 
-                declare -A IMAGE_MAP_TS
-                images=$(docker compose config | grep 'image:' | awk '{print $2}')
-                for image in $images; do
-                    image_prefix=$(echo "$image" | sed 's|/|-|g')
-                    image_prefix=$(echo "$image_prefix" | cut -d':' -f1)
-                    IMAGE_MAP_TS["$image"]="$image_prefix"
-                done
+              declare -A IMAGE_MAP_TS
+              images=$(docker compose config | grep 'image:' | awk '{print $2}')
+              for image in $images; do
+                  image_prefix=$(echo "$image" | sed 's|/|-|g')
+                  image_prefix=$(echo "$image_prefix" | cut -d':' -f1)
+                  IMAGE_MAP_TS["$image"]="$image_prefix"
+              done
 
-                # Loop through images and perform Trivy scans
-                for IMAGE in "${!IMAGE_MAP_TS[@]}"; do
-                    PREFIX="${IMAGE_MAP_TS[$IMAGE]}"
+              # Loop through images and perform Trivy scans
+              for IMAGE in "${!IMAGE_MAP_TS[@]}"; do
+                  PREFIX="${IMAGE_MAP_TS[$IMAGE]}"
 
-                    echo "Scanning image: $IMAGE"
-                    
-                    # All scan types
-                    trivy image "$IMAGE" --ignore-unfixed --format template --template "@$CWD/trivy-html.tpl" -o "trivy-image-scan-${PREFIX}-ignore-unfixed.html"
-                    trivy image "$IMAGE" --ignore-unfixed --format template --template "@$CWD/csv.tpl" -o "trivy-image-scan-${PREFIX}-ignore-unfixed.csv"
-                    trivy image --quiet --format spdx-json --output "trivy-image-scan-${PREFIX}.spdx.json" "$IMAGE"
-                    trivy image --list-all-pkgs --format template --template "@$CWD/csv.tpl" --output "trivy-image-scan-${PREFIX}-list-all-pkgs.csv" "$IMAGE"
-                    trivy image --ignore-unfixed "$IMAGE" | tee "trivy-image-scan-${PREFIX}-ignore-unfixed.txt"
-                    
-                    echo "Completed scanning $IMAGE"
-                done
+                  echo "Scanning image: $IMAGE"
+                  
+                  # All scan types
+                  trivy image "$IMAGE" --ignore-unfixed --format template --template "@$CWD/trivy-html.tpl" -o "trivy-image-scan-${PREFIX}-ignore-unfixed.html"
+                  trivy image "$IMAGE" --ignore-unfixed --format template --template "@$CWD/csv.tpl" -o "trivy-image-scan-${PREFIX}-ignore-unfixed.csv"
+                  trivy image --quiet --format spdx-json --output "trivy-image-scan-${PREFIX}.spdx.json" "$IMAGE"
+                  trivy image --list-all-pkgs --format template --template "@$CWD/csv.tpl" --output "trivy-image-scan-${PREFIX}-list-all-pkgs.csv" "$IMAGE"
+                  trivy image --ignore-unfixed "$IMAGE" | tee "trivy-image-scan-${PREFIX}-ignore-unfixed.txt"
+                  
+                  echo "Completed scanning $IMAGE"
+              done
 
-                echo "completed Time Series Sample App Image scanning"
-              fi
+              echo "completed Time Series Sample App Image scanning"
+            fi
 
-              if [[ "${{ inputs.application }}" == "multimodal" || "${{ inputs.application }}" == "both" ]]; then
-                echo "Building Multimodal Weld Defect Detection Sample app and scanning docker images"
-                cd $CWD/manufacturing-ai-suite/industrial-edge-insights-multimodal/
-                make down
-                # Generate random values for sensitive environment variables
-                INFLUXDB_USERNAME=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 8)
-                echo "INFLUXDB_USERNAME: $INFLUXDB_USERNAME"
-                INFLUXDB_PASSWORD=$(openssl rand -hex 10)
-                VISUALIZER_GRAFANA_USER=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 8)
-                VISUALIZER_GRAFANA_PASSWORD=$(openssl rand -hex 10)
-                MTX_WEBRTCICESERVERS2_0_USERNAME=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 8)
-                MTX_WEBRTCICESERVERS2_0_PASSWORD=$(openssl rand -hex 10)
-                HOST_IP=$(hostname -I | awk '{print $1}')
+            if [[ "${{ inputs.application }}" == "multimodal" || "${{ inputs.application }}" == "both" ]]; then
+              echo "Building Multimodal Weld Defect Detection Sample app and scanning docker images"
+              cd $CWD/manufacturing-ai-suite/industrial-edge-insights-multimodal/
+              make down              
 
-                sed -i "s/INFLUXDB_USERNAME=.*/INFLUXDB_USERNAME=${INFLUXDB_USERNAME}/g" .env
-                sed -i "s/INFLUXDB_PASSWORD=.*/INFLUXDB_PASSWORD=${INFLUXDB_PASSWORD}/g" .env
-                sed -i "s/VISUALIZER_GRAFANA_USER=.*/VISUALIZER_GRAFANA_USER=${VISUALIZER_GRAFANA_USER}/g" .env
-                sed -i "s/VISUALIZER_GRAFANA_PASSWORD=.*/VISUALIZER_GRAFANA_PASSWORD=${VISUALIZER_GRAFANA_PASSWORD}/g" .env
-                sed -i "s/MTX_WEBRTCICESERVERS2_0_USERNAME=.*/MTX_WEBRTCICESERVERS2_0_USERNAME=${MTX_WEBRTCICESERVERS2_0_USERNAME}/g" .env
-                sed -i "s/MTX_WEBRTCICESERVERS2_0_PASSWORD=.*/MTX_WEBRTCICESERVERS2_0_PASSWORD=${MTX_WEBRTCICESERVERS2_0_PASSWORD}/g" .env
-                sed -i "s/HOST_IP=.*/HOST_IP=${HOST_IP}/g" .env
-                make build
-                make up
-                make down
+              sed -i "s/INFLUXDB_USERNAME=.*/INFLUXDB_USERNAME=${INFLUXDB_USERNAME}/g" .env
+              sed -i "s/INFLUXDB_PASSWORD=.*/INFLUXDB_PASSWORD=${INFLUXDB_PASSWORD}/g" .env
+              sed -i "s/VISUALIZER_GRAFANA_USER=.*/VISUALIZER_GRAFANA_USER=${VISUALIZER_GRAFANA_USER}/g" .env
+              sed -i "s/VISUALIZER_GRAFANA_PASSWORD=.*/VISUALIZER_GRAFANA_PASSWORD=${VISUALIZER_GRAFANA_PASSWORD}/g" .env
+              sed -i "s/MTX_WEBRTCICESERVERS2_0_USERNAME=.*/MTX_WEBRTCICESERVERS2_0_USERNAME=${MTX_WEBRTCICESERVERS2_0_USERNAME}/g" .env
+              sed -i "s/MTX_WEBRTCICESERVERS2_0_PASSWORD=.*/MTX_WEBRTCICESERVERS2_0_PASSWORD=${MTX_WEBRTCICESERVERS2_0_PASSWORD}/g" .env
+              sed -i "s/HOST_IP=.*/HOST_IP=${HOST_IP}/g" .env
+              make build
+              make up
+              make down
 
-                declare -A IMAGE_MAP_MM
+              declare -A IMAGE_MAP_MM
 
-                images=$(docker compose config | grep 'image:' | awk '{print $2}')
-                for image in $images; do
-                    image_prefix=$(echo "$image" | sed 's|/|-|g')
-                    image_prefix=$(echo "$image_prefix" | cut -d':' -f1)
-                    IMAGE_MAP_MM["$image"]="$image_prefix"
-                done
+              images=$(docker compose config | grep 'image:' | awk '{print $2}')
+              for image in $images; do
+                  image_prefix=$(echo "$image" | sed 's|/|-|g')
+                  image_prefix=$(echo "$image_prefix" | cut -d':' -f1)
+                  IMAGE_MAP_MM["$image"]="$image_prefix"
+              done
 
 
-                # Loop through images and perform Trivy scans
-                for IMAGE in "${!IMAGE_MAP_MM[@]}"; do
-                    PREFIX="${IMAGE_MAP_MM[$IMAGE]}"
+              # Loop through images and perform Trivy scans
+              for IMAGE in "${!IMAGE_MAP_MM[@]}"; do
+                  PREFIX="${IMAGE_MAP_MM[$IMAGE]}"
 
-                    echo "Scanning image: $IMAGE"
-                    
-                    # All scan types
-                    trivy image "$IMAGE" --ignore-unfixed --format template --template "@$CWD/trivy-html.tpl" -o "trivy-image-scan-${PREFIX}-ignore-unfixed.html"
-                    trivy image "$IMAGE" --ignore-unfixed --format template --template "@$CWD/csv.tpl" -o "trivy-image-scan-${PREFIX}-ignore-unfixed.csv"
-                    trivy image --quiet --format spdx-json --output "trivy-image-scan-${PREFIX}.spdx.json" "$IMAGE"
-                    trivy image --list-all-pkgs --format template --template "@$CWD/csv.tpl" --output "trivy-image-scan-${PREFIX}-list-all-pkgs.csv" "$IMAGE"
-                    trivy image --ignore-unfixed "$IMAGE" | tee "trivy-image-scan-${PREFIX}-ignore-unfixed.txt"
-                    
-                    echo "Completed scanning $IMAGE"
-                done
+                  echo "Scanning image: $IMAGE"
+                  
+                  # All scan types
+                  trivy image "$IMAGE" --ignore-unfixed --format template --template "@$CWD/trivy-html.tpl" -o "trivy-image-scan-${PREFIX}-ignore-unfixed.html"
+                  trivy image "$IMAGE" --ignore-unfixed --format template --template "@$CWD/csv.tpl" -o "trivy-image-scan-${PREFIX}-ignore-unfixed.csv"
+                  trivy image --quiet --format spdx-json --output "trivy-image-scan-${PREFIX}.spdx.json" "$IMAGE"
+                  trivy image --list-all-pkgs --format template --template "@$CWD/csv.tpl" --output "trivy-image-scan-${PREFIX}-list-all-pkgs.csv" "$IMAGE"
+                  trivy image --ignore-unfixed "$IMAGE" | tee "trivy-image-scan-${PREFIX}-ignore-unfixed.txt"
+                  
+                  echo "Completed scanning $IMAGE"
+              done
 
-                echo "completed Multimodal Weld Defect Detection Sample App Image scanning"
-              fi
+              echo "completed Multimodal Weld Defect Detection Sample App Image scanning"
+            fi
             
       - name: Upload Trivy Image Scan Report
         continue-on-error: true
