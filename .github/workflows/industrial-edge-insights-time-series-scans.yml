@@ -222,10 +222,10 @@ jobs:
               cd $CWD/manufacturing-ai-suite/industrial-edge-insights-time-series/
               make down
 
-              sed -i "s/INFLUXDB_USERNAME:.*/INFLUXDB_USERNAME: ${INFLUXDB_USERNAME}/g" .env
-              sed -i "s/INFLUXDB_PASSWORD:.*/INFLUXDB_PASSWORD: ${INFLUXDB_PASSWORD}/g" .env
-              sed -i "s/VISUALIZER_GRAFANA_USER:.*/VISUALIZER_GRAFANA_USER: ${VISUALIZER_GRAFANA_USER}/g" .env
-              sed -i "s/VISUALIZER_GRAFANA_PASSWORD:.*/VISUALIZER_GRAFANA_PASSWORD: ${VISUALIZER_GRAFANA_PASSWORD}/g" .env
+              sed -i "s/INFLUXDB_USERNAME:.*/INFLUXDB_USERNAME: $INFLUXDB_USERNAME/g" .env
+              sed -i "s/INFLUXDB_PASSWORD:.*/INFLUXDB_PASSWORD: $INFLUXDB_PASSWORD/g" .env
+              sed -i "s/VISUALIZER_GRAFANA_USER:.*/VISUALIZER_GRAFANA_USER: $VISUALIZER_GRAFANA_USER/g" .env
+              sed -i "s/VISUALIZER_GRAFANA_PASSWORD:.*/VISUALIZER_GRAFANA_PASSWORD: $VISUALIZER_GRAFANA_PASSWORD/g" .env
 
               make build
               make up_mqtt_ingestion
