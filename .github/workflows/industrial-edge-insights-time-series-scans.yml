@@ -211,9 +211,9 @@ jobs:
                 cd $CWD/manufacturing-ai-suite/industrial-edge-insights-time-series/
                 make down
                 
-                INFLUXDB_USERNAME=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 8)
+                INFLUXDB_USERNAME=$(tr -dc 'a-zA-Z' < /dev/urandom | head -c 8)
                 INFLUXDB_PASSWORD=$(openssl rand -hex 10)
-                VISUALIZER_GRAFANA_USER=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 8)
+                VISUALIZER_GRAFANA_USER=$(tr -dc 'a-zA-Z' < /dev/urandom | head -c 8)
                 VISUALIZER_GRAFANA_PASSWORD=$(openssl rand -hex 10)
 
                 sed -i "s/INFLUXDB_USERNAME:.*/INFLUXDB_USERNAME: ${INFLUXDB_USERNAME}/g" .env
@@ -911,4 +911,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Multimodal Weld Defect Detection Sample app CodeQL Reports
+
           path: codeql_multimodal_reports.zip
