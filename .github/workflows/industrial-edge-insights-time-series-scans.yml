@@ -226,7 +226,7 @@ jobs:
               sed -i "s|INFLUXDB_PASSWORD:.*|INFLUXDB_PASSWORD: $INFLUXDB_PASSWORD|g" .env
               sed -i "s|VISUALIZER_GRAFANA_USER:.*|VISUALIZER_GRAFANA_USER: $VISUALIZER_GRAFANA_USER|g" .env
               sed -i "s|VISUALIZER_GRAFANA_PASSWORD:.*|VISUALIZER_GRAFANA_PASSWORD: $VISUALIZER_GRAFANA_PASSWORD|g" .env
-
+              cat .env
               make build
               make up_mqtt_ingestion
               make down
