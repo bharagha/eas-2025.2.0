@@ -258,6 +258,7 @@ jobs:
                 make down
                 # Generate random values for sensitive environment variables
                 INFLUXDB_USERNAME=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 8)
+                echo "INFLUXDB_USERNAME: $INFLUXDB_USERNAME"
                 INFLUXDB_PASSWORD=$(openssl rand -hex 10)
                 VISUALIZER_GRAFANA_USER=$(cat /dev/urandom | tr -dc 'a-zA-Z' | head -c 8)
                 VISUALIZER_GRAFANA_PASSWORD=$(openssl rand -hex 10)
@@ -913,3 +914,4 @@ jobs:
           name: Multimodal Weld Defect Detection Sample app CodeQL Reports
 
           path: codeql_multimodal_reports.zip
+
